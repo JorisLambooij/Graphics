@@ -13,7 +13,20 @@ namespace Template
 		static int screenID;
 		static Game game;
 		static bool terminated = false;
-		protected override void OnLoad( EventArgs e )
+
+
+        int VBO;
+        int programID;
+
+
+        int vsID, fsID;
+        int attribute_vpos, attribute_vcol;
+        int uniform_mview;
+        int vbo_pos;
+
+
+
+        protected override void OnLoad( EventArgs e )
 		{
 			// called upon app init
 			
@@ -24,8 +37,33 @@ namespace Template
 			Sprite.target = game.screen;
 			screenID = game.screen.GenTexture();
 			game.Init();
-		}
-		protected override void OnUnload( EventArgs e )
+
+
+            //Create Shader program
+            programID = GL.CreateProgram();
+            LoadShader("../../shaders/vs.glsl", ShaderType.VertexShader, programID, out vsID);
+            LoadShader("../../shaders/fs.glsl", ShaderType.FragmentShader, programID, out fsID);
+            GL.LinkProgram(programID);
+
+            //Input variables vertex shader
+            attribute_vpos = GL.GetAttribLocation(programID, "vPosition");
+            attribute_vcol = GL.GetAttribLocation(programID, "vColor");
+            uniform_mview = GL.GetUniformLocation(programID, "M");
+
+            //Link position data to Shader
+            vbo_pos = GL.GenBuffer();
+            GL.BindBuffer(BufferTarget.ArrayBuffer, vbo_pos);
+            GL.BufferData<float>(BufferTarget.ArrayBuffer, (IntPtr)(game.vertexData.Length * 4), game.vertexData, BufferUsageHint.StaticDraw);
+            GL.VertexAttribPointer(attribute_vpos, 3, VertexAttribPointerType.Float, false, 0, 0);
+
+            VBO = GL.GenBuffer();
+            GL.BindBuffer(BufferTarget.ArrayBuffer, VBO);
+
+            GL.EnableClientState(ArrayCap.VertexArray);
+            GL.VertexPointer(3, VertexPointerType.Float, 12, 0);
+
+        }
+        protected override void OnUnload( EventArgs e )
 		{
 			// called upon app close
 			GL.DeleteTextures( 1, ref screenID );
@@ -39,13 +77,32 @@ namespace Template
 			GL.LoadIdentity();
 			GL.Ortho( -1.0, 1.0, -1.0, 1.0, 0.0, 4.0 );
 		}
+
 		protected override void OnUpdateFrame( FrameEventArgs e )
 		{
 			// called once per frame; app logic
 			var keyboard = OpenTK.Input.Keyboard.GetState();
 			if (keyboard[OpenTK.Input.Key.Escape]) this.Exit();
-		}
-		protected override void OnRenderFrame( FrameEventArgs e )
+
+
+            //Creating Matrix TODO: REPLACE 0 WITH a
+            Matrix4 M = Matrix4.CreateFromAxisAngle(new Vector3(0, 0, 1), 0);
+            M *= Matrix4.CreateFromAxisAngle(new Vector3(1, 0, 0), 1.9f);
+            M *= Matrix4.CreateTranslation(0, 0, -1);
+            M *= Matrix4.CreatePerspectiveFieldOfView(1.6f, 1.3f, .1f, 1000);
+
+            //Passing to the GPU
+            GL.UseProgram(programID);
+            GL.UniformMatrix4(uniform_mview, false, ref M);
+
+            //Ready to render
+            GL.EnableVertexAttribArray(attribute_vpos);
+            GL.EnableVertexAttribArray(attribute_vcol);
+            //GL.DrawArrays(PrimitiveType.Triangles, 0, 127 * 127 * 2 * 3);
+
+        }
+
+        protected override void OnRenderFrame( FrameEventArgs e )
 		{
             GL.ClearColor(Color.Black);
             GL.Enable(EnableCap.Texture2D);
@@ -81,6 +138,9 @@ namespace Template
 			GL.TexCoord2( 0.0f, 0.0f ); GL.Vertex2( -1.0f,  1.0f );
 			GL.End();
 
+            GL.BindBuffer(BufferTarget.ArrayBuffer, VBO);
+            GL.DrawArrays(PrimitiveType.Triangles, 0, 127 * 127 * 2 * 3);
+
             GL.Enable(EnableCap.DepthTest);
             GL.Disable(EnableCap.Texture2D);
             GL.Clear(ClearBufferMask.DepthBufferBit);
@@ -95,5 +155,17 @@ namespace Template
 			// entry point
 			using (OpenTKApp app = new OpenTKApp()) { app.Run( 30.0, 0.0 ); }
 		}
-	}
+
+
+        //Load Shader code
+        void LoadShader(String name, ShaderType type, int program, out int ID)
+        {
+            ID = GL.CreateShader(type);
+            using (StreamReader sr = new StreamReader(name))
+                GL.ShaderSource(ID, sr.ReadToEnd());
+            GL.CompileShader(ID);
+            GL.AttachShader(program, ID);
+            Console.WriteLine(GL.GetShaderInfoLog(ID));
+        }
+    }
 }
