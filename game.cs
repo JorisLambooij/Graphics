@@ -9,6 +9,9 @@ namespace Template {
     {
 	    // member variables
 	    public Surface screen;
+        float[] vertexData;
+
+        int VBO;
 
         float a;
         double angle;
@@ -18,11 +21,36 @@ namespace Template {
 
 	    // initialize
 	    public void Init()
-	    {
+        {
+            vertexData = new float[127 * 127 * 2 * 3 * 3];
+
             map = new Surface("../../assets/heightmap.png");
             h = new float[128, 128];
-            for (int y = 0; y < 128; y++) for (int x = 0; x < 128; x++)
-                h[x, y] = ((float)(map.pixels[x + y * 128] & 255)) / 256;
+            for (int y = 0; y < 128; y++)
+                for (int x = 0; x < 128; x++)
+                {
+                    int arrayPos = 3 * x + 128 * 3 * y;
+
+                    float z = ((float)(map.pixels[x + y * 128] & 255)) / 256;
+                    z *= -10;
+
+                    vertexData[arrayPos + 0] = x - 64;
+                    vertexData[arrayPos + 1] = y - 64;
+                    vertexData[arrayPos + 2] = z;
+                }
+            //h[x, y] = ((float)(map.pixels[x + y * 128] & 255)) / 256;
+
+            VBO = GL.GenBuffer();            GL.BindBuffer(BufferTarget.ArrayBuffer, VBO);
+
+            GL.BufferData<float>(
+            BufferTarget.ArrayBuffer,
+            (IntPtr)(vertexData.Length * 4),
+            vertexData,
+            BufferUsageHint.StaticDraw
+            );
+
+            GL.EnableClientState(ArrayCap.VertexArray);
+            GL.VertexPointer(3, VertexPointerType.Float, 12, 0);
 
             angle = 0;
             a = 0;
@@ -43,14 +71,18 @@ namespace Template {
         {
             var M = Matrix4.CreatePerspectiveFieldOfView(1.6f, 1.3f, .1f, 1000);
             GL.LoadMatrix(ref M);
-            GL.Translate(0, 0, -2f);
+            GL.Translate(0, 0, -2);
             float scale = 0.03f;
             GL.Scale(new Vector3(scale, scale, scale));
             GL.Rotate(110, 1.5f, 0, 0);
             GL.Rotate(angle, 0, 0, 1);
 
-            float maxHeight = -10;
+            GL.BindBuffer(BufferTarget.ArrayBuffer, VBO);
+            GL.DrawArrays(PrimitiveType.Triangles, 0, 127 * 127 * 2 * 3);
 
+            /*
+            float maxHeight = -10;
+            
             for(int x = 0; x < h.GetLength(0) - 1; x++)
                 for (int y = 0; y < h.GetLength(1) - 1; y++)
                 {
@@ -82,6 +114,7 @@ namespace Template {
 
                     RenderPolygon(v1, v2, v3, .2f, .5f, .2f);
                 }
+                */
         }
 
         int CreateColor(int red, int green, int blue)
