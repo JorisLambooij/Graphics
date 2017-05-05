@@ -26,18 +26,59 @@ namespace Template {
 
             map = new Surface("../../assets/heightmap.png");
             h = new float[128, 128];
-            for (int y = 0; y < 128; y++)
-                for (int x = 0; x < 128; x++)
+            for (int y = 0; y < 127; y++)
+                for (int x = 0; x < 127; x++)
                 {
-                    int arrayPos = 3 * x + 128 * 3 * y;
+                    int arrayPos = 18 * x + 127 * 18 * y;
+                    float z;
 
-                    float z = ((float)(map.pixels[x + y * 128] & 255)) / 256;
+                    // 1st triangle
+                    z = ((float)(map.pixels[x + y * 128] & 255)) / 256;
                     z *= -10;
 
                     vertexData[arrayPos + 0] = x - 64;
                     vertexData[arrayPos + 1] = y - 64;
                     vertexData[arrayPos + 2] = z;
+
+                    z = ((float)(map.pixels[(x+1) + y * 128] & 255)) / 256;
+                    z *= -10;
+                    vertexData[arrayPos + 3] = x + 1 - 64;
+                    vertexData[arrayPos + 4] = y - 64;
+                    vertexData[arrayPos + 5] = z;
+
+                    z = ((float)(map.pixels[x + (y+1) * 128] & 255)) / 256;
+                    z *= -10;
+
+                    vertexData[arrayPos + 6] = x - 64;
+                    vertexData[arrayPos + 7] = y + 1 - 64;
+                    vertexData[arrayPos + 8] = z;
+
+                    // 2nd triangle
+                    z = ((float)(map.pixels[(x+1) + y * 128] & 255)) / 256;
+                    z *= -10;
+
+                    vertexData[arrayPos + 09] = x + 1 - 64;
+                    vertexData[arrayPos + 10] = y - 64;
+                    vertexData[arrayPos + 11] = z;
+
+                    z = ((float)(map.pixels[x + (y+1) * 128] & 255)) / 256;
+                    z *= -10;
+                    vertexData[arrayPos + 12] = x - 64;
+                    vertexData[arrayPos + 13] = y + 1 - 64;
+                    vertexData[arrayPos + 14] = z;
+
+                    z = ((float)(map.pixels[(x+1) + (y+1) * 128] & 255)) / 256;
+                    z *= -10;
+
+                    vertexData[arrayPos + 15] = x + 1- 64;
+                    vertexData[arrayPos + 16] = y + 1 - 64;
+                    vertexData[arrayPos + 17] = z;
                 }
+
+            for (int i = 0; i < 127 * 127; i++)
+            {
+
+            }
             //h[x, y] = ((float)(map.pixels[x + y * 128] & 255)) / 256;
 
             VBO = GL.GenBuffer();            GL.BindBuffer(BufferTarget.ArrayBuffer, VBO);
