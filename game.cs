@@ -103,8 +103,7 @@ namespace Template {
             GL.BindBuffer(BufferTarget.ArrayBuffer, vbo_pos);
             GL.BufferData<float>(BufferTarget.ArrayBuffer, (IntPtr)(vertexData.Length * 4), vertexData, BufferUsageHint.StaticDraw);
             GL.VertexAttribPointer(attribute_vpos, 3, VertexAttribPointerType.Float, false, 0, 0);
-
-
+            
             VBO = GL.GenBuffer();
             GL.BindBuffer(BufferTarget.ArrayBuffer, VBO);
 
@@ -136,7 +135,7 @@ namespace Template {
             M *= Matrix4.CreateTranslation(0, 0, -1);
             M *= Matrix4.CreatePerspectiveFieldOfView(1.6f, 1.3f, .1f, 1000);
 
-            //Passng to the GPU
+            //Passing to the GPU
             GL.UseProgram(programID);
             GL.UniformMatrix4(uniform_mview, false, ref M);
 
@@ -150,6 +149,8 @@ namespace Template {
 
         public void RenderGL()
         {
+            /*
+            
             var M = Matrix4.CreatePerspectiveFieldOfView(1.6f, 1.3f, .1f, 1000);
             GL.LoadMatrix(ref M);
             GL.Translate(0, 0, -2);
@@ -158,8 +159,8 @@ namespace Template {
             GL.Rotate(110, 1.5f, 0, 0);
             GL.Rotate(angle, 0, 0, 1);
 
-            GL.BindBuffer(BufferTarget.ArrayBuffer, VBO);
-            GL.DrawArrays(PrimitiveType.Triangles, 0, 127 * 127 * 2 * 3);
+            //GL.BindBuffer(BufferTarget.ArrayBuffer, VBO);
+            //GL.DrawArrays(PrimitiveType.Triangles, 0, 127 * 127 * 2 * 3);
 
             /*
             float maxHeight = -10;

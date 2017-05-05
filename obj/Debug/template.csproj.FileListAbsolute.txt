@@ -21,3 +21,5 @@ C:\Users\Thomas\Documents\Graphics2\bin\Debug\OpenTK.dll
 C:\Users\Thomas\Documents\Graphics2\obj\Debug\template.csprojResolveAssemblyReference.cache
 C:\Users\Thomas\Documents\Graphics2\bin\Debug\shaders\fs.glsl
 C:\Users\Thomas\Documents\Graphics2\bin\Debug\shaders\vs.glsl
+C:\Users\Joris\Documents\_Study\Graphics Practica\bin\Debug\shaders\fs.glsl
+C:\Users\Joris\Documents\_Study\Graphics Practica\bin\Debug\shaders\vs.glsl
