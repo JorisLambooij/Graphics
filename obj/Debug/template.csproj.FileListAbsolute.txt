@@ -1,0 +1,7 @@
+C:\Users\Joris\Documents\_Study\Graphics\bin\Debug\template.exe.config
+C:\Users\Joris\Documents\_Study\Graphics\bin\Debug\template.exe
+C:\Users\Joris\Documents\_Study\Graphics\bin\Debug\template.pdb
+C:\Users\Joris\Documents\_Study\Graphics\bin\Debug\OpenTK.dll
+C:\Users\Joris\Documents\_Study\Graphics\obj\Debug\template.csprojResolveAssemblyReference.cache
+C:\Users\Joris\Documents\_Study\Graphics\obj\Debug\template.exe
+C:\Users\Joris\Documents\_Study\Graphics\obj\Debug\template.pdb
