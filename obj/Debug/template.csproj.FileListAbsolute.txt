@@ -23,3 +23,6 @@ C:\Users\Thomas\Documents\Graphics2\bin\Debug\shaders\fs.glsl
 C:\Users\Thomas\Documents\Graphics2\bin\Debug\shaders\vs.glsl
 C:\Users\Joris\Documents\_Study\Graphics Practica\bin\Debug\shaders\fs.glsl
 C:\Users\Joris\Documents\_Study\Graphics Practica\bin\Debug\shaders\vs.glsl
+C:\Users\Lex\Documents\Graphicsschool\bin\Debug\template.exe.config
+C:\Users\Lex\Documents\Graphicsschool\obj\Debug\template.exe
+C:\Users\Lex\Documents\Graphicsschool\obj\Debug\template.pdb
