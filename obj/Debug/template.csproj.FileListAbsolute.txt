@@ -12,3 +12,12 @@ C:\Users\Joris\Documents\_Study\Graphics Practica\bin\Debug\template.exe
 C:\Users\Joris\Documents\_Study\Graphics Practica\bin\Debug\template.pdb
 C:\Users\Joris\Documents\_Study\Graphics Practica\bin\Debug\OpenTK.dll
 C:\Users\Joris\Documents\_Study\Graphics Practica\obj\Debug\template.csprojResolveAssemblyReference.cache
+C:\Users\Thomas\Documents\Graphics2\bin\Debug\template.exe.config
+C:\Users\Thomas\Documents\Graphics2\obj\Debug\template.exe
+C:\Users\Thomas\Documents\Graphics2\obj\Debug\template.pdb
+C:\Users\Thomas\Documents\Graphics2\bin\Debug\template.exe
+C:\Users\Thomas\Documents\Graphics2\bin\Debug\template.pdb
+C:\Users\Thomas\Documents\Graphics2\bin\Debug\OpenTK.dll
+C:\Users\Thomas\Documents\Graphics2\obj\Debug\template.csprojResolveAssemblyReference.cache
+C:\Users\Thomas\Documents\Graphics2\bin\Debug\shaders\fs.glsl
+C:\Users\Thomas\Documents\Graphics2\bin\Debug\shaders\vs.glsl

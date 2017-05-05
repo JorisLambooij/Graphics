@@ -12,12 +12,18 @@ namespace Template {
         float[] vertexData;
 
         int VBO;
+        int programID;
 
         float a;
         double angle;
 
         Surface map;
         float[,] h;
+
+        int vsID, fsID;
+        int attribute_vpos, attribute_vcol;
+        int uniform_mview;
+        int vbo_pos;
 
 	    // initialize
 	    public void Init()
@@ -54,23 +60,23 @@ namespace Template {
                     vertexData[arrayPos + 8] = z;
 
                     // 2nd triangle
-                    z = ((float)(map.pixels[(x+1) + y * 128] & 255)) / 256;
+                    z = ((float)(map.pixels[(x + 1) + y * 128] & 255)) / 256;
                     z *= -10;
 
                     vertexData[arrayPos + 09] = x + 1 - 64;
                     vertexData[arrayPos + 10] = y - 64;
                     vertexData[arrayPos + 11] = z;
 
-                    z = ((float)(map.pixels[x + (y+1) * 128] & 255)) / 256;
+                    z = ((float)(map.pixels[x + (y + 1) * 128] & 255)) / 256;
                     z *= -10;
                     vertexData[arrayPos + 12] = x - 64;
                     vertexData[arrayPos + 13] = y + 1 - 64;
                     vertexData[arrayPos + 14] = z;
 
-                    z = ((float)(map.pixels[(x+1) + (y+1) * 128] & 255)) / 256;
+                    z = ((float)(map.pixels[(x + 1) + (y + 1) * 128] & 255)) / 256;
                     z *= -10;
 
-                    vertexData[arrayPos + 15] = x + 1- 64;
+                    vertexData[arrayPos + 15] = x + 1 - 64;
                     vertexData[arrayPos + 16] = y + 1 - 64;
                     vertexData[arrayPos + 17] = z;
                 }
@@ -80,8 +86,27 @@ namespace Template {
 
             }
             //h[x, y] = ((float)(map.pixels[x + y * 128] & 255)) / 256;
+            
+            //Create Shader program
+            programID = GL.CreateProgram();
+            LoadShader("../../shaders/vs.glsl", ShaderType.VertexShader, programID, out vsID);
+            LoadShader("../../shaders/fs.glsl", ShaderType.FragmentShader, programID, out fsID);
+            GL.LinkProgram(programID);
 
-            VBO = GL.GenBuffer();            GL.BindBuffer(BufferTarget.ArrayBuffer, VBO);
+            //Input variables vertex shader
+            attribute_vpos = GL.GetAttribLocation(programID, "vPosition");
+            attribute_vcol = GL.GetAttribLocation(programID, "vColor");
+            uniform_mview = GL.GetUniformLocation(programID, "M" );
+
+            //Link position data to Shader
+            vbo_pos = GL.GenBuffer();
+            GL.BindBuffer(BufferTarget.ArrayBuffer, vbo_pos);
+            GL.BufferData<float>(BufferTarget.ArrayBuffer, (IntPtr)(vertexData.Length * 4), vertexData, BufferUsageHint.StaticDraw);
+            GL.VertexAttribPointer(attribute_vpos, 3, VertexAttribPointerType.Float, false, 0, 0);
+
+
+            VBO = GL.GenBuffer();
+            GL.BindBuffer(BufferTarget.ArrayBuffer, VBO);
 
             GL.BufferData<float>(
             BufferTarget.ArrayBuffer,
@@ -105,8 +130,23 @@ namespace Template {
 
             angle += 0.5f;
 
+            //Creating Matrix
+            Matrix4 M = Matrix4.CreateFromAxisAngle(new Vector3(0, 0, 1), a);
+            M *= Matrix4.CreateFromAxisAngle(new Vector3(1, 0, 0), 1.9f);
+            M *= Matrix4.CreateTranslation(0, 0, -1);
+            M *= Matrix4.CreatePerspectiveFieldOfView(1.6f, 1.3f, .1f, 1000);
+
+            //Passng to the GPU
+            GL.UseProgram(programID);
+            GL.UniformMatrix4(uniform_mview, false, ref M);
+
+            //Ready to render
+            GL.EnableVertexAttribArray(attribute_vpos);
+            GL.EnableVertexAttribArray(attribute_vcol);
+            GL.DrawArrays(PrimitiveType.Triangles, 0, 127 * 127 * 2 *3);
+
             //Exercise_3();
-	    }
+        }
 
         public void RenderGL()
         {
@@ -264,6 +304,16 @@ namespace Template {
             }
         }
 
+        //Load Shader code
+        void LoadShader( String name, ShaderType type, int program, out int ID)
+        {
+            ID= GL.CreateShader( type );
+            using (StreamReader sr = new StreamReader(name))
+                GL.ShaderSource(ID, sr.ReadToEnd());
+            GL.CompileShader(ID);
+            GL.AttachShader(program,ID);
+            Console.WriteLine(GL.GetShaderInfoLog(ID));
+        }
     }
 
 } // namespace Template
