@@ -155,7 +155,7 @@ namespace Template {
             //Ready to render
             GL.EnableVertexAttribArray(attribute_vpos);
             GL.EnableVertexAttribArray(attribute_vcol);
-
+            
             //GL.BindBuffer(BufferTarget.ArrayBuffer, VBO);
             GL.DrawArrays(PrimitiveType.Triangles, 0, 127 * 127 * 2 * 3);
 
