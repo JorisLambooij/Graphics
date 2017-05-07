@@ -37,49 +37,52 @@ namespace Template {
             for (int y = 0; y < 127; y++)
                 for (int x = 0; x < 127; x++)
                 {
+                    float c = 64;
+                    float zHeight = -10;
+
                     int arrayPos = 18 * x + 127 * 18 * y;
                     float z;
 
                     // 1st triangle
                     z = ((float)(map.pixels[x + y * 128] & 255)) / 256;
-                    z *= -10;
+                    z *= zHeight;
 
-                    vertexData[arrayPos + 0] = x - 64;
-                    vertexData[arrayPos + 1] = y - 64;
+                    vertexData[arrayPos + 0] = x - c;
+                    vertexData[arrayPos + 1] = y - c;
                     vertexData[arrayPos + 2] = z;
 
                     z = ((float)(map.pixels[(x+1) + y * 128] & 255)) / 256;
-                    z *= -10;
-                    vertexData[arrayPos + 3] = x + 1 - 64;
-                    vertexData[arrayPos + 4] = y - 64;
+                    z *= zHeight;
+                    vertexData[arrayPos + 3] = x + 1 - c;
+                    vertexData[arrayPos + 4] = y - c;
                     vertexData[arrayPos + 5] = z;
 
                     z = ((float)(map.pixels[x + (y+1) * 128] & 255)) / 256;
-                    z *= -10;
+                    z *= zHeight;
 
-                    vertexData[arrayPos + 6] = x - 64;
-                    vertexData[arrayPos + 7] = y + 1 - 64;
+                    vertexData[arrayPos + 6] = x - c;
+                    vertexData[arrayPos + 7] = y + 1 - c;
                     vertexData[arrayPos + 8] = z;
 
                     // 2nd triangle
                     z = ((float)(map.pixels[(x + 1) + y * 128] & 255)) / 256;
-                    z *= -10;
+                    z *= zHeight;
 
-                    vertexData[arrayPos + 09] = x + 1 - 64;
-                    vertexData[arrayPos + 10] = y - 64;
+                    vertexData[arrayPos + 09] = x + 1 - c;
+                    vertexData[arrayPos + 10] = y - c;
                     vertexData[arrayPos + 11] = z;
 
                     z = ((float)(map.pixels[x + (y + 1) * 128] & 255)) / 256;
-                    z *= -10;
-                    vertexData[arrayPos + 12] = x - 64;
-                    vertexData[arrayPos + 13] = y + 1 - 64;
+                    z *= zHeight;
+                    vertexData[arrayPos + 12] = x - c;
+                    vertexData[arrayPos + 13] = y + 1 - c;
                     vertexData[arrayPos + 14] = z;
 
                     z = ((float)(map.pixels[(x + 1) + (y + 1) * 128] & 255)) / 256;
-                    z *= -10;
+                    z *= zHeight;
 
-                    vertexData[arrayPos + 15] = x + 1 - 64;
-                    vertexData[arrayPos + 16] = y + 1 - 64;
+                    vertexData[arrayPos + 15] = x + 1 - c;
+                    vertexData[arrayPos + 16] = y + 1 - c;
                     vertexData[arrayPos + 17] = z;
                 }
             
@@ -129,32 +132,34 @@ namespace Template {
 		    screen.Print( "hello world", 2, 2, 0xffffff );
             //screen.Line(2, 20, 160, 20, 0xff0000);
 
-            a += (float)(2 * Math.PI) / 180;
+            a += (float)(2 * Math.PI) / 360;
 
             //GL.Color3(0.0f, 0.0f, 0.0f);
-
-            //Creating Matrix
-            Matrix4 M = Matrix4.CreateFromAxisAngle(new Vector3(0, 0, 1), a);
-            M *= Matrix4.CreateFromAxisAngle(new Vector3(1, 0, 0), 0.88f * 1.9f);
-            M *= Matrix4.CreateTranslation(0, 0, -1);
-            M *= Matrix4.CreatePerspectiveFieldOfView(1.6f, 1.3f, .1f, 1000);
-            
-            //Passing to the GPU
-            GL.UseProgram(programID);
-            GL.UniformMatrix4(uniform_mview, false, ref M);
-
-            //Ready to render
-            GL.EnableVertexAttribArray(attribute_vpos);
-            GL.EnableVertexAttribArray(attribute_vcol);
-            
-            //GL.BindBuffer(BufferTarget.ArrayBuffer, VBO);
-            GL.DrawArrays(PrimitiveType.Triangles, 0, 127 * 127 * 2 *3);
 
             //Exercise_3();
         }
 
         public void RenderGL()
         {
+            
+            //Creating Matrix
+            Matrix4 M = Matrix4.CreateFromAxisAngle(new Vector3(0, 0, 1), a);
+            M *= Matrix4.CreateFromAxisAngle(new Vector3(1, 0, 0), 1.9f);
+            M *= Matrix4.CreateTranslation(0, 0, -64);
+            M *= Matrix4.CreatePerspectiveFieldOfView(1.6f, 1.3f, .1f, 1000);
+            
+            //Passing to the GPU
+            GL.UseProgram(programID);
+            GL.UniformMatrix4(uniform_mview, false, ref M);
+            
+            //Ready to render
+            GL.EnableVertexAttribArray(attribute_vpos);
+            GL.EnableVertexAttribArray(attribute_vcol);
+
+            //GL.BindBuffer(BufferTarget.ArrayBuffer, VBO);
+            GL.DrawArrays(PrimitiveType.Triangles, 0, 127 * 127 * 2 * 3);
+
+
             /*
             var M = Matrix4.CreatePerspectiveFieldOfView(1.6f, 1.3f, .1f, 1000);
             GL.LoadMatrix(ref M);
@@ -163,14 +168,17 @@ namespace Template {
             GL.Scale(new Vector3(scale, scale, scale));
             GL.Rotate(110, 1.5f, 0, 0);
             GL.Rotate(angle, 0, 0, 1);
+            */
+            //GL.BindBuffer(BufferTarget.ArrayBuffer, VBO);
+            //GL.DrawArrays(PrimitiveType.Triangles, 0, 127 * 127 * 2 * 3);
 
-            GL.BindBuffer(BufferTarget.ArrayBuffer, VBO);
-            GL.DrawArrays(PrimitiveType.Triangles, 0, 127 * 127 * 2 * 3);
+        }
 
-            /*
+        private void OldMethod()
+        {
             float maxHeight = -10;
-            
-            for(int x = 0; x < h.GetLength(0) - 1; x++)
+
+            for (int x = 0; x < h.GetLength(0) - 1; x++)
                 for (int y = 0; y < h.GetLength(1) - 1; y++)
                 {
                     Vector3 v1 = new Vector3(x, y, h[x, y] * maxHeight);
@@ -201,7 +209,6 @@ namespace Template {
 
                     RenderPolygon(v1, v2, v3, .2f, .5f, .2f);
                 }
-                */
         }
 
         int CreateColor(int red, int green, int blue)
