@@ -32,7 +32,8 @@ namespace Template {
             vertexData = new float[127 * 127 * 2 * 3 * 3];
 
             map = new Surface("../../assets/heightmap.png");
-            h = new float[128, 128];
+            //h = new float[128, 128];
+
             for (int y = 0; y < 127; y++)
                 for (int x = 0; x < 127; x++)
                 {
@@ -81,12 +82,6 @@ namespace Template {
                     vertexData[arrayPos + 16] = y + 1 - 64;
                     vertexData[arrayPos + 17] = z;
                 }
-
-            for (int i = 0; i < 127 * 127; i++)
-            {
-
-            }
-            //h[x, y] = ((float)(map.pixels[x + y * 128] & 255)) / 256;
             
             //Create Shader program
             programID = GL.CreateProgram();
@@ -132,13 +127,15 @@ namespace Template {
 	    {
 		    screen.Clear( 0 );
 		    screen.Print( "hello world", 2, 2, 0xffffff );
-            screen.Line(2, 20, 160, 20, 0xff0000);
+            //screen.Line(2, 20, 160, 20, 0xff0000);
 
             a += (float)(2 * Math.PI) / 180;
 
+            //GL.Color3(0.0f, 0.0f, 0.0f);
+
             //Creating Matrix
             Matrix4 M = Matrix4.CreateFromAxisAngle(new Vector3(0, 0, 1), a);
-            M *= Matrix4.CreateFromAxisAngle(new Vector3(1, 0, 0), 0.9f * 1.9f);
+            M *= Matrix4.CreateFromAxisAngle(new Vector3(1, 0, 0), 0.88f * 1.9f);
             M *= Matrix4.CreateTranslation(0, 0, -1);
             M *= Matrix4.CreatePerspectiveFieldOfView(1.6f, 1.3f, .1f, 1000);
             
