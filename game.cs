@@ -10,6 +10,7 @@ namespace Template {
 	    // member variables
 	    public Surface screen;
         float[] vertexData;
+        float[] vertexNormals;
 
         int VBO;
         int programID;
@@ -19,17 +20,20 @@ namespace Template {
 
         Surface map;
         float[,] h;
+        float zHeight = -10;
 
         int vsID, fsID;
-        int attribute_vpos, attribute_vcol;
+        int attribute_vpos, attribute_vcol, attribute_vnormal;
         int uniform_mview;
         int vbo_pos;
         int vbo_col;
+        int vbo_normal;
 
-	    // initialize
-	    public void Init()
+        // initialize
+        public void Init()
         {
             vertexData = new float[127 * 127 * 2 * 3 * 3];
+            vertexNormals = new float[127 * 127 * 2 * 3 * 3];
 
             map = new Surface("../../assets/heightmap.png");
             //h = new float[128, 128];
@@ -38,7 +42,6 @@ namespace Template {
                 for (int x = 0; x < 127; x++)
                 {
                     float c = 64;
-                    float zHeight = -10;
 
                     int arrayPos = 18 * x + 127 * 18 * y;
                     float z;
@@ -50,7 +53,7 @@ namespace Template {
                     vertexData[arrayPos + 0] = x - c;
                     vertexData[arrayPos + 1] = y - c;
                     vertexData[arrayPos + 2] = z;
-
+                    
                     z = ((float)(map.pixels[(x+1) + y * 128] & 255)) / 256;
                     z *= zHeight;
                     vertexData[arrayPos + 3] = x + 1 - c;
@@ -85,7 +88,16 @@ namespace Template {
                     vertexData[arrayPos + 16] = y + 1 - c;
                     vertexData[arrayPos + 17] = z;
                 }
-            
+
+            FillNormalArray();
+            /*
+            for (int y = 0; y < 128; y += 5)
+            {
+                Vector3 N = getVertexNormal(20, y);
+                Console.WriteLine("y: " + y + "; N: " + N);
+                Console.WriteLine("AngleWithZAxis: " + Math.Acos(Vector3.Dot(N, new Vector3(0, 0, 1))));
+                Console.WriteLine();
+            }*/
             //Create Shader program
             programID = GL.CreateProgram();
             LoadShader("../../shaders/vs.glsl", ShaderType.VertexShader, programID, out vsID);
@@ -95,6 +107,7 @@ namespace Template {
             //Input variables vertex shader
             attribute_vpos = GL.GetAttribLocation(programID, "vPosition");
             attribute_vcol = GL.GetAttribLocation(programID, "vColor");
+            attribute_vnormal = GL.GetAttribLocation(programID, "vN");
             uniform_mview = GL.GetUniformLocation(programID, "M" );
 
             //Link position data to Shader
@@ -108,6 +121,12 @@ namespace Template {
             GL.BindBuffer(BufferTarget.ArrayBuffer, vbo_col);
             GL.BufferData<float>(BufferTarget.ArrayBuffer, (IntPtr)(vertexData.Length * 4), vertexData, BufferUsageHint.StaticDraw);
             GL.VertexAttribPointer(attribute_vcol, 3, VertexAttribPointerType.Float, false, 0, 0);
+
+            //Link vertex normals to Shader
+            vbo_normal = GL.GenBuffer();
+            GL.BindBuffer(BufferTarget.ArrayBuffer, vbo_normal);
+            GL.BufferData<float>(BufferTarget.ArrayBuffer, (IntPtr)(vertexData.Length * 4), vertexNormals, BufferUsageHint.StaticDraw);
+            GL.VertexAttribPointer(attribute_vnormal, 3, VertexAttribPointerType.Float, false, 0, 0);
 
             VBO = GL.GenBuffer();
             GL.BindBuffer(BufferTarget.ArrayBuffer, VBO);
@@ -123,16 +142,16 @@ namespace Template {
             GL.VertexPointer(3, VertexPointerType.Float, 12, 0);
 
             angle = 0;
-            a = 0;
+            a = -90;
 	    }
 	    // tick: renders one frame
 	    public void Tick()
 	    {
 		    screen.Clear( 0 );
 		    screen.Print( "hello world", 2, 2, 0xffffff );
-            //screen.Line(2, 20, 160, 20, 0xff0000);
+            screen.Line(2, 20, 160, 20, 0xff0000);
 
-            a += (float)(2 * Math.PI) / 360;
+            //a += (float)(2 * Math.PI) / 720;
 
             //GL.Color3(0.0f, 0.0f, 0.0f);
 
@@ -155,7 +174,9 @@ namespace Template {
             //Ready to render
             GL.EnableVertexAttribArray(attribute_vpos);
             GL.EnableVertexAttribArray(attribute_vcol);
-            
+            GL.EnableVertexAttribArray(attribute_vnormal);
+
+
             //GL.BindBuffer(BufferTarget.ArrayBuffer, VBO);
             GL.DrawArrays(PrimitiveType.Triangles, 0, 127 * 127 * 2 * 3);
 
@@ -215,8 +236,7 @@ namespace Template {
         {
             return (red << 16) + (green << 8) + blue;
         }
-
-
+        
         public void RenderPolygon(Vector3 v1, Vector3 v2, Vector3 v3, float r, float g, float b)
         {
             GL.Color3(r, g, b);
@@ -226,8 +246,7 @@ namespace Template {
             GL.Vertex3(v3);
             GL.End();
         }
-
-
+        
         void Exercise_3()
         {
             // Velocity for 1 turn / second
@@ -296,7 +315,101 @@ namespace Template {
         }
         #endregion
 
+        #region vertex Normals and stuff
 
+        void FillNormalArray()
+        {
+            for (int y = 0; y < 128; y++)
+                for (int x = 0; x < 128; x++)
+                {
+                    int arrayPos = 3 * x + 128 * 3 * y;
+                    
+                    Vector3 normal = getVertexNormal(x, y);
+
+                    vertexNormals[arrayPos + 0] = normal.X;
+                    vertexNormals[arrayPos + 1] = normal.Y;
+                    vertexNormals[arrayPos + 2] = normal.Z;
+                }
+        }
+
+        Vector3 getFaceNormal(Vector3 p1, Vector3 p2, Vector3 p3)
+        {
+            Vector3 u = p2 - p1;
+            Vector3 v = p3 - p1;
+
+            Vector3 normal = Vector3.Zero;
+
+            normal.X = u.Y * v.Z - u.Z * v.Y;
+            normal.Y = u.Z * v.X - u.X * v.Z;
+            normal.Z = u.X * v.Y - u.Y * v.X;
+            
+            return normal;
+        }
+
+        Vector3 getVertexNormal(int x, int y)
+        {
+            Vector3[] faceNormals = new Vector3[6];
+
+            Vector3 p1, p2, p3;
+
+            p1 = new Vector3(x, y - 1, getZ(x, y - 1));
+            p2 = new Vector3(x, y, getZ(x, y));
+            p3 = new Vector3(x - 1, y, getZ(x - 1, y));
+
+            faceNormals[0] = getFaceNormal(p1, p2, p3);
+
+
+            p1 = new Vector3(x, y - 1, getZ(x, y - 1));
+            p2 = new Vector3(x + 1, y - 1, getZ(x + 1, y - 1));
+            p3 = new Vector3(x, y, getZ(x, y));
+
+            faceNormals[1] = getFaceNormal(p1, p2, p3);
+
+
+            p1 = new Vector3(x + 1, y, getZ(x + 1, y));
+            p2 = new Vector3(x, y, getZ(x, y));
+            p3 = new Vector3(x + 1, y - 1, getZ(x + 1, y - 1));
+
+            faceNormals[2] = getFaceNormal(p1, p2, p3);
+
+
+            p1 = new Vector3(x + 1, y, getZ(x + 1, y));
+            p2 = new Vector3(x, y + 1, getZ(x, y + 1));
+            p3 = new Vector3(x, y, getZ(x, y));
+
+            faceNormals[3] = getFaceNormal(p1, p2, p3);
+
+
+            p1 = new Vector3(x - 1, y + 1, getZ(x - 1, y + 1));
+            p2 = new Vector3(x, y, getZ(x, y));
+            p3 = new Vector3(x, y + 1, getZ(x, y + 1));
+
+            faceNormals[4] = getFaceNormal(p1, p2, p3);
+
+
+            p1 = new Vector3(x - 1, y + 1, getZ(x - 1, y + 1));
+            p2 = new Vector3(x - 1, y, getZ(x - 1, y));
+            p3 = new Vector3(x, y, getZ(x, y));
+
+            faceNormals[5] = getFaceNormal(p1, p2, p3);
+
+            Vector3 sum = Vector3.Zero;
+            for(int i = 0; i < 6; i++)
+                sum += faceNormals[i];
+            
+            return sum.Normalized();
+        }
+
+        float getZ(int x, int y)
+        {
+            if (x < 0 || x >= 128 || y < 0 || y >= 128)
+                return 0;
+            float z = ((float)(map.pixels[x + y * 128] & 255)) / 256;
+            z *= zHeight;
+            return z;
+        }
+        #endregion
+        
         void Exercise_1_And_2()
         {
             int centerX = screen.width / 2;
