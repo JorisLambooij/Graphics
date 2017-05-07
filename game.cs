@@ -24,6 +24,7 @@ namespace Template {
         int attribute_vpos, attribute_vcol;
         int uniform_mview;
         int vbo_pos;
+        int vbo_col;
 
 	    // initialize
 	    public void Init()
@@ -103,7 +104,13 @@ namespace Template {
             GL.BindBuffer(BufferTarget.ArrayBuffer, vbo_pos);
             GL.BufferData<float>(BufferTarget.ArrayBuffer, (IntPtr)(vertexData.Length * 4), vertexData, BufferUsageHint.StaticDraw);
             GL.VertexAttribPointer(attribute_vpos, 3, VertexAttribPointerType.Float, false, 0, 0);
-            
+
+            //Link color data to Shader
+            vbo_col = GL.GenBuffer();
+            GL.BindBuffer(BufferTarget.ArrayBuffer, vbo_col);
+            GL.BufferData<float>(BufferTarget.ArrayBuffer, (IntPtr)(vertexData.Length * 4), vertexData, BufferUsageHint.StaticDraw);
+            GL.VertexAttribPointer(attribute_vcol, 3, VertexAttribPointerType.Float, false, 0, 0);
+
             VBO = GL.GenBuffer();
             GL.BindBuffer(BufferTarget.ArrayBuffer, VBO);
 
@@ -127,14 +134,14 @@ namespace Template {
 		    screen.Print( "hello world", 2, 2, 0xffffff );
             screen.Line(2, 20, 160, 20, 0xff0000);
 
-            angle += 0.5f;
+            a += (float)(2 * Math.PI) / 180;
 
             //Creating Matrix
             Matrix4 M = Matrix4.CreateFromAxisAngle(new Vector3(0, 0, 1), a);
-            M *= Matrix4.CreateFromAxisAngle(new Vector3(1, 0, 0), 1.9f);
+            M *= Matrix4.CreateFromAxisAngle(new Vector3(1, 0, 0), 0.9f * 1.9f);
             M *= Matrix4.CreateTranslation(0, 0, -1);
             M *= Matrix4.CreatePerspectiveFieldOfView(1.6f, 1.3f, .1f, 1000);
-
+            
             //Passing to the GPU
             GL.UseProgram(programID);
             GL.UniformMatrix4(uniform_mview, false, ref M);
@@ -142,6 +149,8 @@ namespace Template {
             //Ready to render
             GL.EnableVertexAttribArray(attribute_vpos);
             GL.EnableVertexAttribArray(attribute_vcol);
+            
+            //GL.BindBuffer(BufferTarget.ArrayBuffer, VBO);
             GL.DrawArrays(PrimitiveType.Triangles, 0, 127 * 127 * 2 *3);
 
             //Exercise_3();
@@ -150,7 +159,6 @@ namespace Template {
         public void RenderGL()
         {
             /*
-            
             var M = Matrix4.CreatePerspectiveFieldOfView(1.6f, 1.3f, .1f, 1000);
             GL.LoadMatrix(ref M);
             GL.Translate(0, 0, -2);
@@ -159,8 +167,8 @@ namespace Template {
             GL.Rotate(110, 1.5f, 0, 0);
             GL.Rotate(angle, 0, 0, 1);
 
-            //GL.BindBuffer(BufferTarget.ArrayBuffer, VBO);
-            //GL.DrawArrays(PrimitiveType.Triangles, 0, 127 * 127 * 2 * 3);
+            GL.BindBuffer(BufferTarget.ArrayBuffer, VBO);
+            GL.DrawArrays(PrimitiveType.Triangles, 0, 127 * 127 * 2 * 3);
 
             /*
             float maxHeight = -10;
