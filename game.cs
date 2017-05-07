@@ -90,14 +90,14 @@ namespace Template {
                 }
 
             FillNormalArray();
-            /*
-            for (int y = 0; y < 128; y += 5)
+            
+            for (int y = 40; y < 45; y += 1)
             {
-                Vector3 N = getVertexNormal(20, y);
+                Vector3 N = getVertexNormal(60, y);
                 Console.WriteLine("y: " + y + "; N: " + N);
-                Console.WriteLine("AngleWithZAxis: " + Math.Acos(Vector3.Dot(N, new Vector3(0, 0, 1))));
+                Console.WriteLine("AngleWithZAxis: " + (Vector3.Dot(N, new Vector3(0, 0, 1))));
                 Console.WriteLine();
-            }*/
+            }
             //Create Shader program
             programID = GL.CreateProgram();
             LoadShader("../../shaders/vs.glsl", ShaderType.VertexShader, programID, out vsID);
@@ -164,7 +164,7 @@ namespace Template {
             //Creating Matrix
             Matrix4 M = Matrix4.CreateFromAxisAngle(new Vector3(0, 0, 1), a);
             M *= Matrix4.CreateFromAxisAngle(new Vector3(1, 0, 0), 1.9f);
-            M *= Matrix4.CreateTranslation(0, 0, -64);
+            M *= Matrix4.CreateTranslation(0, 0, -96);
             M *= Matrix4.CreatePerspectiveFieldOfView(1.6f, 1.3f, .1f, 1000);
             
             //Passing to the GPU
@@ -319,18 +319,50 @@ namespace Template {
 
         void FillNormalArray()
         {
-            for (int y = 0; y < 128; y++)
-                for (int x = 0; x < 128; x++)
+            for (int y = 0; y < 127; y++)
+                for (int x = 0; x < 127; x++)
                 {
-                    int arrayPos = 3 * x + 128 * 3 * y;
-                    
-                    Vector3 normal = getVertexNormal(x, y);
+                    int arrayPos = 18 * x + 127 * 18 * y;
+
+                    Vector3 normal;
+
+                    normal = getVertexNormal(x, y);
 
                     vertexNormals[arrayPos + 0] = normal.X;
                     vertexNormals[arrayPos + 1] = normal.Y;
                     vertexNormals[arrayPos + 2] = normal.Z;
+
+
+                    normal = getVertexNormal(x + 1, y);
+
+                    vertexNormals[arrayPos + 3] = normal.X;
+                    vertexNormals[arrayPos + 4] = normal.Y;
+                    vertexNormals[arrayPos + 5] = normal.Z;
+
+                    vertexNormals[arrayPos + 09] = normal.X;
+                    vertexNormals[arrayPos + 10] = normal.Y;
+                    vertexNormals[arrayPos + 11] = normal.Z;
+
+
+                    normal = getVertexNormal(x, y + 1);
+
+                    vertexNormals[arrayPos + 6] = normal.X;
+                    vertexNormals[arrayPos + 7] = normal.Y;
+                    vertexNormals[arrayPos + 8] = normal.Z;
+
+                    vertexNormals[arrayPos + 12] = normal.X;
+                    vertexNormals[arrayPos + 13] = normal.Y;
+                    vertexNormals[arrayPos + 14] = normal.Z;
+
+
+                    normal = getVertexNormal(x + 1, y + 1);
+
+                    vertexNormals[arrayPos + 15] = normal.X;
+                    vertexNormals[arrayPos + 16] = normal.Y;
+                    vertexNormals[arrayPos + 17] = normal.Z;
                 }
         }
+        
 
         Vector3 getFaceNormal(Vector3 p1, Vector3 p2, Vector3 p3)
         {
