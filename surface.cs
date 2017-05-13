@@ -5,7 +5,7 @@ using OpenTK;
 using OpenTK.Graphics;
 using OpenTK.Graphics.OpenGL;
  
-namespace Template
+namespace template
 {
 	public class Sprite
 	{
@@ -224,7 +224,7 @@ namespace Template
 				int src = f * 12;
 				for( int v = 0; v < font.height; v++, src += font.width, dest += width ) for( int u = 0; u < 12; u++ )
 				{
-					if ((font.pixels[src + u] & 0xffffff) != 0) pixels[dest + u] = c;
+					if ((font.pixels[src + u] & 0xffffff) != 0 && dest + u < pixels.Length && dest + u > 0) pixels[dest + u] = c;
 				}
 			}
 		}

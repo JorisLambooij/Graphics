@@ -6,7 +6,7 @@ using OpenTK.Graphics;
 using OpenTK.Graphics.OpenGL;
 using OpenTK.Input;
 
-namespace Template
+namespace template
 {
 	public class OpenTKApp : GameWindow
 	{
@@ -20,7 +20,7 @@ namespace Template
 			GL.Enable( EnableCap.Texture2D );
 			GL.Disable( EnableCap.DepthTest );
 			GL.Hint( HintTarget.PerspectiveCorrectionHint, HintMode.Nicest );
-			ClientSize = new Size( 640, 400 );
+			ClientSize = new Size( 1024, 512 );
 			game = new Game();
 			game.screen = new Surface( Width, Height );
 			Sprite.target = game.screen;

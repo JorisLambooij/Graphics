@@ -9,9 +9,9 @@ namespace template
 {
     class Camera
     {
-        Vector3 position;
-        Vector3 direction;
-        Vector2 screenPlane;
+        public Vector3 position;
+        public Vector3 direction;
+        public Vector2 screenPlane;
 
         float viewDistance;
 
@@ -30,7 +30,7 @@ namespace template
         {
             get
             {
-
+                return new Vector3(0, 0, 1);
             }
         }
 

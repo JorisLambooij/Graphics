@@ -9,15 +9,26 @@ namespace template
 {
     abstract class Primitive
     {
-        protected Vector3 position;
-        protected Vector3 color;
+        public Vector3 position;
+        public Vector3 color;
+
+        public Primitive(Vector3 position, Vector3 color)
+        {
+            this.position = position;
+            this.color = color;
+        }
 
         public abstract Intersection intersectPrimitive(Ray ray);
     }
 
     class Sphere : Primitive
     {
-        float radius;
+        public float radius;
+
+        public Sphere(Vector3 position, float radius, Vector3 color) : base (position, color)
+        {
+            this.radius = radius;
+        }
 
         public override Intersection intersectPrimitive(Ray ray)
         {
@@ -25,7 +36,7 @@ namespace template
             float t = Vector3.Dot(c, ray.direction);
             Vector3 q = c - t * ray.direction;
             float p2 = Vector3.Dot(q, q);
-            if (p2 > radius * radius)
+            if (p2 > radius * radius || t < 0)
             {
                 return null;
             }
@@ -45,11 +56,36 @@ namespace template
 
     class Plane : Primitive
     {
-        Vector3 normal;
+        public Vector3 normal;
+
+        public Plane(Vector3 position, Vector3 normal, Vector3 color) : base (position, color)
+        {
+            this.normal = normal;
+        }
 
         public override Intersection intersectPrimitive(Ray ray)
         {
+            // the intersection point
+            Vector3 iPoint;
+            // the length of the ray from origin to intersection point
+            float t = Vector3.Dot(normal, ray.origin) / Vector3.Dot(normal, ray.direction);
+            iPoint = ray.origin + -t * ray.direction;
 
+            // wrong direction, return null
+            if (t > 0)
+                return null;
+
+            Intersection i = new Intersection();
+            i.origin = ray.origin;
+            i.direction = ray.direction;
+
+            i.intersectionPoint = iPoint;
+            i.normal = this.normal;
+
+            i.collider = this;
+            i.color = this.color;
+
+            return i;
         }
     }
 
@@ -85,6 +121,12 @@ namespace template
         float intensity;
         Vector3 color;
 
+        public Light(Vector3 position, float intensity, Vector3 color)
+        {
+            this.position = position;
+            this.intensity = intensity;
+            this.color = color;
+        }
     }
 
     class Ray
@@ -93,6 +135,10 @@ namespace template
         public Vector3 direction;
         public float distance;
 
-
+        public Ray(Vector3 origin, Vector3 direction)
+        {
+            this.origin = origin;
+            this.direction = direction;
+        }
     }
 }
