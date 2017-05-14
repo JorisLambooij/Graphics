@@ -13,6 +13,9 @@ namespace template
 		static int screenID;
 		static Game game;
 		static bool terminated = false;
+
+        InputHandler input;
+
 		protected override void OnLoad( EventArgs e )
 		{
 			// called upon app init
@@ -26,6 +29,7 @@ namespace template
 			Sprite.target = game.screen;
 			screenID = game.screen.GenTexture();
 			game.Init();
+            input = new InputHandler();
 		}
 		protected override void OnUnload( EventArgs e )
 		{
@@ -43,11 +47,14 @@ namespace template
 		}
 		protected override void OnUpdateFrame( FrameEventArgs e )
 		{
-			// called once per frame; app logic
+            // called once per frame; app logic
 			var keyboard = OpenTK.Input.Keyboard.GetState();
 			if (keyboard[OpenTK.Input.Key.Escape]) this.Exit();
-		}
-		protected override void OnRenderFrame( FrameEventArgs e )
+
+            input.Update();
+            game.Input(input);
+        }
+        protected override void OnRenderFrame( FrameEventArgs e )
 		{
 			// called once per frame; render
 			game.Tick();

@@ -36,21 +36,27 @@ namespace template
             float t = Vector3.Dot(c, ray.direction);
             Vector3 q = c - t * ray.direction;
             float p2 = Vector3.Dot(q, q);
-            if (p2 > radius * radius || t < 0)
+            if (p2 > radius * radius || t <= 0)
             {
                 return null;
             }
 
+
+
+            //Vector3 iPoint = this.position + t * 
+
             Intersection i = new Intersection();
+
             i.origin = ray.origin;
             i.direction = ray.direction;
-            i.intersectionPoint = ray.origin + t * ray.direction;
+            i.intersectionPoint = this.position + q;
+
+            i.distance = (i.intersectionPoint - i.origin).Length;
+
             i.normal = (i.intersectionPoint - this.position).Normalized();
             i.collider = this;
-            i.color = this.color;
-            i.distance = t;
-            return i;
 
+            return i;
         }
     }
 
@@ -75,15 +81,10 @@ namespace template
             if (t > 0)
                 return null;
 
-            Intersection i = new Intersection();
-            i.origin = ray.origin;
-            i.direction = ray.direction;
-
-            i.intersectionPoint = iPoint;
+            Intersection i = new Intersection(ray, -t);
+            
             i.normal = this.normal;
-
             i.collider = this;
-            i.color = this.color;
 
             return i;
         }
@@ -98,28 +99,40 @@ namespace template
         public Vector3 normal;
 
         public Primitive collider;
-        public Vector3 color;
+        //protected Vector3 color;
 
         public float distance;
-        /*
-        public Intersection( Vector3 origin, Vector3 direction, Scene scene)
+        
+        public Intersection()
         {
-            float distance = float.PositiveInfinity;
-            this.origin = origin;
-            this.direction = direction;
-            foreach( Primitive p in scene.sceneObjects)
-            {
-                
-            }
-        }*/
+            //distance = float.PositiveInfinity;
+        }
 
+        public Intersection( Ray ray, float distance )
+        {
+            this.distance = distance;
+            this.origin = ray.origin;
+            this.direction = ray.direction;
+            this.intersectionPoint = ray.origin + distance * ray.direction;
+        }
+
+        public Vector3 Color
+        {
+            get
+            {
+                if (collider != null)
+                    return collider.color / (distance * distance);
+                else
+                    return Vector3.Zero;
+            }
+        }
     }
 
     class Light
     {
-        Vector3 position;
-        float intensity;
-        Vector3 color;
+        public Vector3 position;
+        public float intensity;
+        public Vector3 color;
 
         public Light(Vector3 position, float intensity, Vector3 color)
         {

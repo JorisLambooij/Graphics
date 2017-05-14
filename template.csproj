@@ -68,6 +68,7 @@
   <ItemGroup>
     <Compile Include="Camera.cs" />
     <Compile Include="game.cs" />
+    <Compile Include="InputHandler.cs" />
     <Compile Include="Primitive.cs" />
     <Compile Include="Raytracer.cs" />
     <Compile Include="Scene.cs" />

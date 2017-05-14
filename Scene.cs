@@ -27,13 +27,28 @@ namespace template
             {
                 Intersection currIntersection = p.intersectPrimitive(ray);
 
-                if(currIntersection != null && currIntersection.distance < nearestDistance)// && currIntersection.distance > 0)
+                if(currIntersection != null && currIntersection.distance < nearestDistance)
                     nearestIntersection = currIntersection;
                 
             }
             return nearestIntersection;
         }
-        
+
+        public bool intersectSceneShadow(Ray ray)
+        {
+            ray.origin = ray.origin + RayTracer.Lambda * ray.direction;
+
+            foreach (Primitive p in sceneObjects)
+            {
+                Intersection currIntersection = p.intersectPrimitive(ray);
+
+                if (currIntersection != null && currIntersection.distance > RayTracer.Lambda)
+                    return true;
+
+            }
+            return false;
+        }
+
         public void AddObject(Primitive p)
         {
             sceneObjects.Add(p);
