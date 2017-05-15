@@ -22,7 +22,7 @@ namespace template
         {
             this.screen = screen;
             // camera setup
-            Vector3 camPos = new Vector3(0, 0, 1);
+            Vector3 camPos = new Vector3(-10, 0, 1);
             Vector3 camDir = new Vector3(1, 0, 0);
             float view = 1;
             camera = new Camera(camPos, camDir, view);
@@ -32,10 +32,10 @@ namespace template
             scene = new Scene();
             scene.AddLight(new Vector3(10, 6, 0), 10, new Vector3(1, 1, 1));
 
-            Plane p = new Plane(new Vector3(-1, -1, -1), new Vector3(0, 0, 1), new Vector3(1, 1, 0));
+            Plane p = new Plane(new Vector3(0, 0, 0), new Vector3(0, 0, 1), new Vector3(10, 10, 0));
             scene.AddObject(p);
 
-            Sphere s = new Sphere(new Vector3(10, 0, 0), 2, new Vector3(16, 8, 24));
+            Sphere s = new Sphere(new Vector3(0, 0, 1), 2, new Vector3(16, 8, 24));
             scene.AddObject(s);
         }
 
@@ -61,7 +61,7 @@ namespace template
 
                     // keep for Debug (for now)
                     Intersection intersect = scene.intersectScene(ray);
-                    if (x % 8 == 0 && y == 256)
+                    if (x % 16 == 0 && ray.direction.Z == 0)
                     {
                         DebugRay(ray, intersect);
                         //Console.WriteLine(x + " Intersection: " + intersect.Color);
@@ -81,7 +81,8 @@ namespace template
             // TODO: check for materials
             else
             {
-                return intersect.Color;//DirectIllumination(intersect) * intersect.Color;
+                return intersect.Color;
+                //return DirectIllumination(intersect) * intersect.Color;
             }
         }
 
@@ -114,8 +115,13 @@ namespace template
         #region Debug
         // screen scale relative to world scale
         float scale = -32;
+
+        // offsets in SCREEN COORDINATES
+        // important because the axes are flipped
+        // higher xOffset means image will be moved to the right
         int xOffset = 512 + 256;
-        int yOffset = 480;
+        // higher yOffset means image will be moved down
+        int yOffset = 200;
 
         public void DebugView()
         {
@@ -131,13 +137,38 @@ namespace template
             foreach (Primitive p in scene.sceneObjects)
             {
                 if (p is Sphere)
-                    screen.Print("SPHERE", (int)(-p.position.Y * scale + xOffset), (int) (p.position.X * scale + yOffset) - 10, 0x00ff00);
+                {
+                    screen.Print("SPHERE", DebugX(p.position.Y), DebugY(p.position.X) - 10, 0x00ff00);
+                    Sphere sp = (Sphere)p;
+
+                    float deltaA = (float) Math.PI / 6;
+                    for(float a = 0; a < 2 * Math.PI; a += deltaA)
+                    {
+
+                        int x1 = DebugX((float)Math.Sin(a - deltaA) * sp.radius + sp.position.Y);
+                        int y1 = DebugY((float)Math.Cos(a - deltaA) * sp.radius + sp.position.X);
+                        int x2 = DebugX((float)Math.Sin(a) * sp.radius + sp.position.Y);
+                        int y2 = DebugY((float)Math.Cos(a) * sp.radius + sp.position.X);
+
+                        screen.Line(x1, y1, x2, y2, 0x0000ff);
+                    }
+                }
             }
             foreach (Light l in scene.lightSources)
             {
                 screen.Print("LIGHT", (int)(-l.position.Y * scale + xOffset), (int)(l.position.X * scale + yOffset) - 10, 0x00ffff);
             }
         }
+
+        public int DebugX(float y)
+        {
+            return (int)(-y * scale) + xOffset;
+        }
+        public int DebugY(float x)
+        {
+            return (int)(x * scale) + yOffset;
+        }
+
 
         // draw a debug line for the specified ray.
         public void DebugRay(Ray ray, Intersection i)
@@ -150,17 +181,12 @@ namespace template
             else
                 endPoint = ray.origin + -scale * ray.direction;
 
-            int x1 = (int)(-startPoint.Y * scale) + xOffset;
-            int y1 = (int)(startPoint.X * scale) + yOffset;
+            int x1 = DebugX(startPoint.Y);
+            int y1 = DebugY(startPoint.X);
 
-            int x2 = (int)(-endPoint.Y * scale) + xOffset;
-            int y2 = (int)(endPoint.X * scale) + yOffset;
-            /*
-            x1 = MathHelper.Clamp(x1, 512, 1023);
-            y1 = MathHelper.Clamp(y1, 0, 511);
-            x2 = MathHelper.Clamp(x2, 512, 1023);
-            y2 = MathHelper.Clamp(y2, 0, 511);
-            */
+            int x2 = DebugX(endPoint.Y);
+            int y2 = DebugY(endPoint.X);
+
             screen.Line(x1, y1, x2, y2, 0xffff00);
         }
         #endregion

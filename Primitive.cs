@@ -40,16 +40,16 @@ namespace template
             {
                 return null;
             }
-
-
-
-            //Vector3 iPoint = this.position + t * 
+            t -= (float) Math.Sqrt(radius * radius - p2);
 
             Intersection i = new Intersection();
 
             i.origin = ray.origin;
             i.direction = ray.direction;
-            i.intersectionPoint = this.position + q;
+
+            //i.intersectionPoint = this.position + q;
+            i.intersectionPoint = ray.origin + t * ray.direction;
+
 
             i.distance = (i.intersectionPoint - i.origin).Length;
 
@@ -78,7 +78,7 @@ namespace template
             iPoint = ray.origin + -t * ray.direction;
 
             // wrong direction, return null
-            if (t > 0)
+            if (t >= 0)
                 return null;
 
             Intersection i = new Intersection(ray, -t);
