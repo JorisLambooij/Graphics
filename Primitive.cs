@@ -74,7 +74,8 @@ namespace template
             // the intersection point
             Vector3 iPoint;
             // the length of the ray from origin to intersection point
-            float t = Vector3.Dot(normal, ray.origin) / Vector3.Dot(normal, ray.direction);
+            float d = -Vector3.Dot(normal, position);
+            float t = (Vector3.Dot(normal, ray.origin) + d)/ Vector3.Dot(normal, ray.direction);
             iPoint = ray.origin + -t * ray.direction;
 
             // wrong direction, return null

@@ -19,7 +19,7 @@ namespace template {
 	    // tick: renders one frame
 	    public void Tick()
 	    {
-            screen.Clear(0);
+            screen.Clear(0x444444);
             rayTracer.Render();
         }
 
@@ -27,19 +27,19 @@ namespace template {
         {
             if (input.KeyDown(Key.Right))
             {
-                rayTracer.scene.sceneObjects[1].position.Y += 0.5f;
+                rayTracer.scene.sceneObjects[2].position.Y += 0.5f;
             }
             else if (input.KeyDown(Key.Left))
             {
-                rayTracer.scene.sceneObjects[1].position.Y -= 0.5f;
+                rayTracer.scene.sceneObjects[2].position.Y -= 0.5f;
             }
             if (input.KeyDown(Key.Up))
             {
-                rayTracer.scene.sceneObjects[1].position.Z += 0.5f;
+                rayTracer.scene.sceneObjects[2].position.Z += 0.5f;
             }
             else if (input.KeyDown(Key.Down))
             {
-                rayTracer.scene.sceneObjects[1].position.Z -= 0.5f;
+                rayTracer.scene.sceneObjects[2].position.Z -= 0.5f;
             }
         }
     }

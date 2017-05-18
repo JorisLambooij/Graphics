@@ -31,17 +31,17 @@ namespace template
 
             // initialize the scene with a few object (only one plane atm)
             scene = new Scene();
-            scene.AddLight(new Vector3(0, 7, 5), 5000, new Vector3(1, 1, 1));
-            scene.AddLight(new Vector3(0, -7, 5), 5000, new Vector3(1, 1, 1));
+            scene.AddLight(new Vector3(-5, 6, 1f), 5000, new Vector3(1, 1, 1));
+            scene.AddLight(new Vector3(3, -6, 5f), 5000, new Vector3(1, 1, 1));
             //scene.AddLight(new Vector3(0, 0, 20), 5000, new Vector3(1, 1, 1));
 
             Plane p = new Plane(new Vector3(0, 0, 0), new Vector3(0, 0, 1), new Vector3(1, 1, 0));
             scene.AddObject(p);
 
-            Plane p2 = new Plane(new Vector3(40, 0, 0.1f), new Vector3(-1, 0, 1), new Vector3(10, 10, 10));
-            //scene.AddObject(p2);
+            Plane p2 = new Plane(new Vector3(40, 0, 0.1f), new Vector3(-1, 0, 1), new Vector3(100, 100, 1000));
+            scene.AddObject(p2);
 
-            Sphere s1 = new Sphere(new Vector3(2, 2, 5), 2, new Vector3(1.0f, 0.4f, 1.0f));
+            Sphere s1 = new Sphere(new Vector3(2, 3, 1), 2, new Vector3(1.0f, 0.4f, 1.0f));
             scene.AddObject(s1);
 
             Sphere s2 = new Sphere(new Vector3(0, -2, 1), 2, new Vector3(0.0f, 0.9f, .0f));
@@ -107,25 +107,31 @@ namespace template
         public Vector3 DirectIllumination(Intersection intersect)
         {
             Vector3 totalIllumination = Vector3.Zero;
-
-            foreach(Light lightSource in scene.lightSources)
+            if (shadowraydebug)
+            {
+                int i = 0;
+            }
+            foreach (Light lightSource in scene.lightSources)
             {
                 Vector3 lightD = (lightSource.position - intersect.intersectionPoint).Normalized();
                 float cos = Vector3.Dot(lightD, intersect.normal);
-                
-                if (cos >= 0)
+
+                //cos = Math.Abs(cos);
+
+                if (cos > 0)
                 {
                     Vector3 startPoint = intersect.intersectionPoint + Lambda * lightD;
                     Ray shadowRay = new Ray(startPoint, lightD);
+                    
                     // if we hit nothing
-                    if ( !scene.intersectSceneShadow(shadowRay) )
+                    if ( !scene.intersectSceneShadow(shadowRay, lightSource) )
                     {
                         Vector3 d = lightSource.position - shadowRay.origin;
-
                         Vector3 color = (lightSource.color * lightSource.intensity * cos / d.LengthSquared);
                         
                         totalIllumination += color;
 
+                        // debug stuff
                         if (shadowraydebug)
                             DebugShadowRay(shadowRay, lightSource, CreateColor(color));
                     }
@@ -164,18 +170,26 @@ namespace template
             {
                 if (p is Sphere)
                 {
-                    screen.Print("SPHERE", DebugX(p.position.Y), DebugY(p.position.X) - 10, 0x00ff00);
+                    screen.Print("SPHERE", DebugX(p.position.Y), DebugY(p.position.X) - 10, CreateColor(p.color));
                     Sphere sp = (Sphere)p;
 
                     float deltaA = (float) Math.PI / 6;
-                    for(float a = 0; a < 2 * Math.PI; a += deltaA)
-                    {
-                        int x1 = DebugX((float)Math.Sin(a - deltaA) * sp.radius + sp.position.Y);
-                        int y1 = DebugY((float)Math.Cos(a - deltaA) * sp.radius + sp.position.X);
-                        int x2 = DebugX((float)Math.Sin(a) * sp.radius + sp.position.Y);
-                        int y2 = DebugY((float)Math.Cos(a) * sp.radius + sp.position.X);
 
-                        screen.Line(x1, y1, x2, y2, 0x0000ff);
+                    float h = Math.Abs(camera.position.Z - sp.position.Z);
+
+                    if(h < sp.radius)
+                    {
+                        float r = sp.radius * (float) Math.Cos(h / sp.radius);
+
+                        for (float a = 0; a < 2 * Math.PI; a += deltaA)
+                        {
+                            int x1 = DebugX((float)Math.Sin(a - deltaA) * r + sp.position.Y);
+                            int y1 = DebugY((float)Math.Cos(a - deltaA) * r + sp.position.X);
+                            int x2 = DebugX((float)Math.Sin(a) * r + sp.position.Y);
+                            int y2 = DebugY((float)Math.Cos(a) * r + sp.position.X);
+
+                            screen.Line(x1, y1, x2, y2, CreateColor(sp.color));
+                        }
                     }
                 }
             }
@@ -198,6 +212,8 @@ namespace template
         // draw a debug line for the specified ray.
         public void DebugRay(Ray ray, Intersection i, int c)
         {
+            //c = 0x888888;
+
             Vector3 startPoint = ray.origin;
             Vector3 endPoint;
             
@@ -213,8 +229,6 @@ namespace template
             int y2 = DebugY(endPoint.X);
 
             screen.Line(x1, y1, x2, y2, c);
-        
-            
         }
 
         public void DebugShadowRay(Ray ray, Light lightsource, int c)

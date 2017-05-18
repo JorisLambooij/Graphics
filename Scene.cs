@@ -35,17 +35,20 @@ namespace template
             return nearestIntersection;
         }
 
-        public bool intersectSceneShadow(Ray ray)
+        public bool intersectSceneShadow(Ray ray, Light lightSource)
         {
-            ray.origin = ray.origin + RayTracer.Lambda * ray.direction;
-
             foreach (Primitive p in sceneObjects)
             {
                 Intersection currIntersection = p.intersectPrimitive(ray);
 
-                if (currIntersection != null)// && currIntersection.distance > RayTracer.Lambda)
-                    return true;
-
+                if(currIntersection != null)
+                {
+                    float intersectdistanceSquared = (currIntersection.intersectionPoint - ray.origin).LengthSquared;
+                    float lightDistanceSquared = (lightSource.position - ray.origin).LengthSquared;
+                    
+                    if (intersectdistanceSquared > 0 && intersectdistanceSquared < lightDistanceSquared)
+                        return true;
+                }
             }
             return false;
         }
