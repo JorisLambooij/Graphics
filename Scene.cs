@@ -35,8 +35,9 @@ namespace template
             return nearestIntersection;
         }
 
-        public bool intersectSceneShadow(Ray ray, Light lightSource)
+        public float intersectSceneShadow(Ray ray, Light lightSource)
         {
+            float currTransparency = 1;
             foreach (Primitive p in sceneObjects)
             {
                 Intersection currIntersection = p.intersectPrimitive(ray);
@@ -47,10 +48,14 @@ namespace template
                     float lightDistanceSquared = (lightSource.position - ray.origin).LengthSquared;
                     
                     if (intersectdistanceSquared > 0 && intersectdistanceSquared < lightDistanceSquared)
-                        return true;
+                    {
+                        currTransparency *= currIntersection.collider.transparency;
+                        if (currTransparency <= 0.1f)
+                            return 0;
+                    }
                 }
             }
-            return false;
+            return currTransparency;
         }
 
         public void AddObject(Primitive p)

@@ -12,10 +12,16 @@ namespace template
         public Vector3 position;
         public Vector3 color;
 
-        public Primitive(Vector3 position, Vector3 color)
+        public float refractionIndex;
+        public float transparency;
+
+        public Primitive(Vector3 position, Vector3 color, float refractionIndex = 1, float transparency = 0)
         {
             this.position = position;
             this.color = color;
+
+            this.refractionIndex = refractionIndex;
+            this.transparency = transparency;
         }
 
         public abstract Intersection intersectPrimitive(Ray ray);
@@ -32,6 +38,30 @@ namespace template
 
         public override Intersection intersectPrimitive(Ray ray)
         {
+            if( (ray.origin - position).LengthSquared < radius * radius)
+            {
+                if (ray.direction.Yz == Vector2.Zero)
+                {
+                    int xd = 0;
+                }
+                // ray starts inside the sphere
+                Vector3 o_c = ray.origin - position;
+                float dot = Vector3.Dot(ray.direction, o_c);
+                float sqrt = dot * dot - o_c.LengthSquared + radius * radius;
+                float d = -dot + (float) Math.Sqrt(sqrt);
+
+                Intersection inter = new Intersection();
+
+                inter.origin = ray.origin;
+                inter.direction = ray.direction;
+
+                inter.intersectionPoint = ray.origin + d * ray.direction;
+
+                inter.distance = d;
+                inter.collider = this;
+
+                return inter;
+            }
             Vector3 c = position - ray.origin;
             float t = Vector3.Dot(c, ray.direction);
             Vector3 q = c - t * ray.direction;

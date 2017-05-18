@@ -14,7 +14,8 @@ namespace template
         public Camera camera;
         public Scene scene;
 
-        public bool shadowraydebug;
+        public bool debugFrame;
+        public int recursionCap = 5;
 
         Surface screen;
 
@@ -33,7 +34,6 @@ namespace template
             scene = new Scene();
             scene.AddLight(new Vector3(0, -5, 10f), 3000, new Vector3(1, 1, 1));
             scene.AddLight(new Vector3(-5, 2, 1f), 2500, new Vector3(1, 1, 1));
-            //scene.AddLight(new Vector3(0, 0, 20), 5000, new Vector3(1, 1, 1));
 
             Plane p = new Plane(new Vector3(0, 0, 0), new Vector3(0, 0, 1), new Vector3(1f, 1f, 0));
             scene.AddObject(p);
@@ -46,6 +46,11 @@ namespace template
 
             Sphere s2 = new Sphere(new Vector3(0, -2, 1), 2, new Vector3(0.0f, 0.9f, .0f));
             scene.AddObject(s2);
+
+            Sphere s3 = new Sphere(new Vector3(-2, 0, 1), 1, new Vector3(1.0f, 1.0f, 1.0f));
+            s3.transparency = 0.5f;
+            s3.refractionIndex = 1.5f;
+            scene.AddObject(s3);
         }
 
         public void Render()
@@ -64,80 +69,75 @@ namespace template
                     Ray ray = new Ray(camera.position, pixelDirection.Normalized());
 
                     if (x % 16 == 0 && ray.direction.Z == 0)
-                    {
-                        shadowraydebug = true;
-
-                        //Console.WriteLine(x + " Intersection: " + intersect.Color);
-                    }
-
-                    Vector3 color = TraceRay(ray);
-
+                        debugFrame = true;
+                    
+                    Vector3 color = TraceRay(ray, 0);
                     screen.pixels[x + y * screen.width] = CreateColor(color);
-
-
+                    
                     // keep for Debug (for now)
                     Intersection intersect = scene.intersectScene(ray);
-                    if (shadowraydebug)
+                    if (debugFrame)
                     {
                         DebugRay(ray, intersect, CreateColor(intersect.Color));
-                        shadowraydebug = false;
-                        //Console.WriteLine(x + " Intersection: " + intersect.Color);
+                        debugFrame = false;
                     }
                 }
 
             DebugView();
         }
 
-        public Vector3 TraceRay(Ray ray)
+        public Vector3 TraceRay(Ray ray, int recursion)
         {
             ray.origin = ray.origin + Lambda * ray.direction;
             Intersection intersect = scene.intersectScene(ray);
-            
+
             // did not hit anything, return black
             if (intersect.collider == null)
                 return Vector3.Zero;
             // TODO: check for materials
-            else
-            {
-                //return intersect.Color;
+            else if(intersect.collider.transparency == 0)
                 return DirectIllumination(intersect) * intersect.Color;
+            
+            else if(recursion < recursionCap)
+            {
+                Vector3 newDirection = ray.direction;
+                Vector3 newOrigin = intersect.intersectionPoint;
+                Ray newRay = new Ray(newOrigin, newDirection);
+
+                if (debugFrame)
+                {
+                    Intersection inter = scene.intersectScene(newRay);
+                    DebugRay(newRay, inter, CreateColor( intersect.Color));
+                }
+
+                return TraceRay(newRay, recursion + 1);
             }
+            else
+                return Vector3.Zero;
         }
 
         public Vector3 DirectIllumination(Intersection intersect)
         {
             Vector3 totalIllumination = Vector3.Zero;
-            if (shadowraydebug)
-            {
-                int i = 0;
-            }
+
             foreach (Light lightSource in scene.lightSources)
             {
                 Vector3 lightD = (lightSource.position - intersect.intersectionPoint).Normalized();
                 float cos = Vector3.Dot(lightD, intersect.normal);
-
-                //cos = Math.Abs(cos);
 
                 if (cos > 0)
                 {
                     Vector3 startPoint = intersect.intersectionPoint + Lambda * lightD;
                     Ray shadowRay = new Ray(startPoint, lightD);
                     
-                    // if we hit nothing
-                    if ( !scene.intersectSceneShadow(shadowRay, lightSource) )
-                    {
-                        Vector3 d = lightSource.position - shadowRay.origin;
-                        Vector3 color = (lightSource.color * lightSource.intensity * cos / d.LengthSquared);
-                        
-                        totalIllumination += color;
+                    Vector3 d = lightSource.position - shadowRay.origin;
+                    Vector3 color = scene.intersectSceneShadow(shadowRay, lightSource) * (lightSource.color * lightSource.intensity * cos / d.LengthSquared);
 
-                        // debug stuff
-                        if (shadowraydebug)
-                            DebugShadowRay(shadowRay, lightSource, CreateColor(color));
-                    }
-                    else if(shadowraydebug)
-                        DebugShadowRay(shadowRay, lightSource, 0xff0000);
-                    
+                    totalIllumination += color;
+
+                    // debug stuff
+                    if (debugFrame)
+                        DebugShadowRay(shadowRay, lightSource, CreateColor(color));
                 }
             }
             return totalIllumination;
@@ -146,7 +146,7 @@ namespace template
 
         #region Debug
         // screen scale relative to world scale
-        float scale = -32;
+        float scale = -64;
 
         // offsets in SCREEN COORDINATES
         // important because the axes are flipped
@@ -174,13 +174,11 @@ namespace template
                     Sphere sp = (Sphere)p;
 
                     float deltaA = (float) Math.PI / 6;
-
                     float h = Math.Abs(camera.position.Z - sp.position.Z);
 
                     if(h < sp.radius)
                     {
                         float r = sp.radius * (float) Math.Cos(h / sp.radius);
-
                         for (float a = 0; a < 2 * Math.PI; a += deltaA)
                         {
                             int x1 = DebugX((float)Math.Sin(a - deltaA) * r + sp.position.Y);
@@ -194,9 +192,7 @@ namespace template
                 }
             }
             foreach (Light l in scene.lightSources)
-            {
                 screen.Print("LIGHT", (int)(-l.position.Y * scale + xOffset), (int)(l.position.X * scale + yOffset) - 10, 0x00ffff);
-            }
         }
 
         public int DebugX(float y)
