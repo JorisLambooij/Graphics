@@ -120,6 +120,36 @@ namespace template
             return i;
         }
     }
+    class Triangle : Primitive
+    {
+        public Vector3 normal;
+
+        public Triangle(Vector3 position, Vector3 normal, Vector2 p1, Vector2 p2, Vector2 p3, Vector3 color) : base(position, color)
+        {
+            this.normal = normal;
+        }
+
+        public override Intersection intersectPrimitive(Ray ray)
+        {
+            // the intersection point
+            Vector3 iPoint;
+            // the length of the ray from origin to intersection point
+            float d = -Vector3.Dot(normal, position);
+            float t = (Vector3.Dot(normal, ray.origin) + d) / Vector3.Dot(normal, ray.direction);
+            iPoint = ray.origin + -t * ray.direction;
+
+            // wrong direction, return null
+            if (t >= 0)
+                return null;
+
+            Intersection i = new Intersection(ray, -t);
+
+            i.normal = this.normal;
+            i.collider = this;
+
+            return i;
+        }
+    }
 
     class Intersection
     {
