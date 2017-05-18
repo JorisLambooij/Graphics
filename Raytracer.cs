@@ -14,6 +14,7 @@ namespace template
         public Camera camera;
         public Scene scene;
 
+        public bool shadowraydebug;
 
         Surface screen;
 
@@ -30,7 +31,7 @@ namespace template
 
             // initialize the scene with a few object (only one plane atm)
             scene = new Scene();
-            scene.AddLight(new Vector3(10, 6, 0), 10, new Vector3(1, 1, 1));
+            scene.AddLight(new Vector3(0, 6, 0), 10, new Vector3(1, 1, 1));
 
             Plane p = new Plane(new Vector3(0, 0, 0), new Vector3(0, 0, 1), new Vector3(10, 10, 0));
             scene.AddObject(p);
@@ -54,6 +55,13 @@ namespace template
                     Vector3 pixelDirection = camera.direction + new Vector3(0, (x * xSteps) - 0.5f, -(y * ySteps) + 0.5f);
                     Ray ray = new Ray(camera.position, pixelDirection.Normalized());
 
+                    if (x % 16 == 0 && ray.direction.Z == 0)
+                    {
+                        shadowraydebug = true;
+
+                        //Console.WriteLine(x + " Intersection: " + intersect.Color);
+                    }
+
                     Vector3 color = TraceRay(ray);
 
                     screen.pixels[x + y * screen.width] = CreateColor(color);
@@ -61,9 +69,11 @@ namespace template
 
                     // keep for Debug (for now)
                     Intersection intersect = scene.intersectScene(ray);
-                    if (x % 16 == 0 && ray.direction.Z == 0)
+                    if (shadowraydebug)
                     {
                         DebugRay(ray, intersect);
+                        shadowraydebug = false;
+
                         //Console.WriteLine(x + " Intersection: " + intersect.Color);
                     }
                 }
@@ -81,8 +91,8 @@ namespace template
             // TODO: check for materials
             else
             {
-                return intersect.Color;
-                //return DirectIllumination(intersect) * intersect.Color;
+                //return intersect.Color;
+                return DirectIllumination(intersect) * intersect.Color;
             }
         }
 
@@ -104,8 +114,18 @@ namespace template
                     if ( !scene.intersectSceneShadow(shadowRay) )
                     {
                         totalIllumination += (lightSource.color * lightSource.intensity * cos);
+
+                        if (shadowraydebug)
+                        {
+                            DebugShadowRay(shadowRay, lightSource, 0x00ff00);
+                        }
+                    }
+                    else if(shadowraydebug)
+                    {
+                        DebugShadowRay(shadowRay, lightSource, 0xff0000);
                     }
                 }
+                
                 
             }
             return totalIllumination;
@@ -188,6 +208,23 @@ namespace template
             int y2 = DebugY(endPoint.X);
 
             screen.Line(x1, y1, x2, y2, 0xffff00);
+        
+            
+        }
+
+        public void DebugShadowRay(Ray ray, Light lightsource, int c)
+        {
+            Vector3 startPoint = ray.origin;
+            Vector3 endPoint = lightsource.position;
+         
+            int x1 = DebugX(startPoint.Y);
+            int y1 = DebugY(startPoint.X);
+
+            int x2 = DebugX(endPoint.Y);
+            int y2 = DebugY(endPoint.X);
+
+            screen.Line(x1, y1, x2, y2, c);
+            Console.WriteLine("shadowsrs");
         }
         #endregion
 
