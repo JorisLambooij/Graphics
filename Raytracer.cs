@@ -31,11 +31,7 @@ namespace template
 
             // initialize the scene with a few object (only one plane atm)
             scene = new Scene();
-<<<<<<< HEAD
             scene.AddLight(new Vector3(0, 6, 2), 100, new Vector3(1, 1, 1));
-=======
-            scene.AddLight(new Vector3(0, 6, 0), 10, new Vector3(1, 1, 1));
->>>>>>> b89163cfbcdbfa851f8bf0470b3f27ca02007b01
 
             Plane p = new Plane(new Vector3(0, 0, 0), new Vector3(0, 0, 1), new Vector3(1, 1, 0));
             scene.AddObject(p);
@@ -82,13 +78,8 @@ namespace template
                     if (shadowraydebug)
                     {
                         DebugRay(ray, intersect);
-<<<<<<< HEAD
-                        //Console.WriteLine(x + " Direct Illumination: " + color);
-=======
                         shadowraydebug = false;
-
                         //Console.WriteLine(x + " Intersection: " + intersect.Color);
->>>>>>> b89163cfbcdbfa851f8bf0470b3f27ca02007b01
                     }
                 }
 
@@ -239,7 +230,6 @@ namespace template
             int y2 = DebugY(endPoint.X);
 
             screen.Line(x1, y1, x2, y2, c);
-            Console.WriteLine("shadowsrs");
         }
         #endregion
 

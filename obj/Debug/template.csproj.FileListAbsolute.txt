@@ -6,7 +6,6 @@ C:\Users\Joris\Documents\_Study\Graphics Practicum 2\bin\Debug\template.pdb
 C:\Users\Joris\Documents\_Study\Graphics Practicum 2\bin\Debug\OpenTK.dll
 C:\Users\Joris\Documents\_Study\Graphics Practicum 2\obj\Debug\template.exe
 C:\Users\Joris\Documents\_Study\Graphics Practicum 2\obj\Debug\template.pdb
-<<<<<<< HEAD
 C:\Users\Joris\Documents\_Study\Graphics\bin\Debug\template.exe.config
 C:\Users\Joris\Documents\_Study\Graphics\obj\Debug\template.exe
 C:\Users\Joris\Documents\_Study\Graphics\obj\Debug\template.pdb
@@ -14,11 +13,3 @@ C:\Users\Joris\Documents\_Study\Graphics\bin\Debug\template.exe
 C:\Users\Joris\Documents\_Study\Graphics\bin\Debug\template.pdb
 C:\Users\Joris\Documents\_Study\Graphics\bin\Debug\OpenTK.dll
 C:\Users\Joris\Documents\_Study\Graphics\obj\Debug\template.csprojResolveAssemblyReference.cache
-=======
-C:\Users\Lex\Documents\Graphicsschool\bin\Debug\template.exe
-C:\Users\Lex\Documents\Graphicsschool\bin\Debug\template.pdb
-C:\Users\Lex\Documents\Graphicsschool\bin\Debug\OpenTK.dll
-C:\Users\Lex\Documents\Graphicsschool\obj\Debug\template.csprojResolveAssemblyReference.cache
-C:\Users\Lex\Documents\Graphicsschool\obj\Debug\template.exe
-C:\Users\Lex\Documents\Graphicsschool\obj\Debug\template.pdb
->>>>>>> b89163cfbcdbfa851f8bf0470b3f27ca02007b01
