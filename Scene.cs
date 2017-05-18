@@ -26,10 +26,11 @@ namespace template
             foreach(Primitive p in sceneObjects)
             {
                 Intersection currIntersection = p.intersectPrimitive(ray);
-
-                if(currIntersection != null && currIntersection.distance < nearestDistance)
+                if (currIntersection != null && currIntersection.distance < nearestDistance)
+                {
                     nearestIntersection = currIntersection;
-                
+                    nearestDistance = currIntersection.distance;
+                }
             }
             return nearestIntersection;
         }
@@ -42,7 +43,7 @@ namespace template
             {
                 Intersection currIntersection = p.intersectPrimitive(ray);
 
-                if (currIntersection != null && currIntersection.distance > RayTracer.Lambda)
+                if (currIntersection != null)// && currIntersection.distance > RayTracer.Lambda)
                     return true;
 
             }

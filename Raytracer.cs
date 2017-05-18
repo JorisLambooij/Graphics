@@ -9,7 +9,7 @@ namespace template
 {
     class RayTracer
     {
-        public static float Lambda = 0.002f;
+        public static float Lambda = 0.02f;
 
         public Camera camera;
         public Scene scene;
@@ -30,13 +30,19 @@ namespace template
 
             // initialize the scene with a few object (only one plane atm)
             scene = new Scene();
-            scene.AddLight(new Vector3(10, 6, 0), 10, new Vector3(1, 1, 1));
+            scene.AddLight(new Vector3(0, 6, 2), 100, new Vector3(1, 1, 1));
 
-            Plane p = new Plane(new Vector3(0, 0, 0), new Vector3(0, 0, 1), new Vector3(10, 10, 0));
+            Plane p = new Plane(new Vector3(0, 0, 0), new Vector3(0, 0, 1), new Vector3(1, 1, 0));
             scene.AddObject(p);
 
-            Sphere s = new Sphere(new Vector3(0, 0, 1), 2, new Vector3(16, 8, 24));
-            scene.AddObject(s);
+            Plane p2 = new Plane(new Vector3(40, 0, 0.1f), new Vector3(-1, 0, 1), new Vector3(10, 10, 10));
+            //scene.AddObject(p2);
+
+            Sphere s1 = new Sphere(new Vector3(0, 2, 1), 2, new Vector3(1.0f, 0.4f, 1.0f));
+            scene.AddObject(s1);
+
+            Sphere s2 = new Sphere(new Vector3(0, -2, 1), 2, new Vector3(0.0f, 0.9f, .0f));
+            scene.AddObject(s2);
         }
 
         public void Render()
@@ -64,7 +70,7 @@ namespace template
                     if (x % 16 == 0 && ray.direction.Z == 0)
                     {
                         DebugRay(ray, intersect);
-                        //Console.WriteLine(x + " Intersection: " + intersect.Color);
+                        //Console.WriteLine(x + " Direct Illumination: " + color);
                     }
                 }
 
@@ -73,16 +79,17 @@ namespace template
 
         public Vector3 TraceRay(Ray ray)
         {
+            ray.origin = ray.origin + Lambda * ray.direction;
             Intersection intersect = scene.intersectScene(ray);
-
+            
             // did not hit anything, return black
             if (intersect.collider == null)
                 return Vector3.Zero;
             // TODO: check for materials
             else
             {
-                return intersect.Color;
-                //return DirectIllumination(intersect) * intersect.Color;
+                //return intersect.Color;
+                return DirectIllumination(intersect) * intersect.Color;
             }
         }
 
@@ -96,10 +103,11 @@ namespace template
                 float angle = Vector3.Dot(lightD, intersect.normal);
 
                 float cos = (float) MathHelper.Clamp( Math.Cos(angle), 0, 1);
-                
+
                 if(cos > 0)
                 {
-                    Ray shadowRay = new Ray(intersect.intersectionPoint, lightD);
+                    Vector3 startPoint = intersect.intersectionPoint + Lambda * lightD;
+                    Ray shadowRay = new Ray(startPoint, lightD);
                     // if we hit nothing
                     if ( !scene.intersectSceneShadow(shadowRay) )
                     {
@@ -144,7 +152,6 @@ namespace template
                     float deltaA = (float) Math.PI / 6;
                     for(float a = 0; a < 2 * Math.PI; a += deltaA)
                     {
-
                         int x1 = DebugX((float)Math.Sin(a - deltaA) * sp.radius + sp.position.Y);
                         int y1 = DebugY((float)Math.Cos(a - deltaA) * sp.radius + sp.position.X);
                         int x2 = DebugX((float)Math.Sin(a) * sp.radius + sp.position.Y);
