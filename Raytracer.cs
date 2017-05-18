@@ -31,7 +31,9 @@ namespace template
 
             // initialize the scene with a few object (only one plane atm)
             scene = new Scene();
-            scene.AddLight(new Vector3(0, 6, 2), 100, new Vector3(1, 1, 1));
+            scene.AddLight(new Vector3(0, 7, 5), 5000, new Vector3(1, 1, 1));
+            scene.AddLight(new Vector3(0, -7, 5), 5000, new Vector3(1, 1, 1));
+            //scene.AddLight(new Vector3(0, 0, 20), 5000, new Vector3(1, 1, 1));
 
             Plane p = new Plane(new Vector3(0, 0, 0), new Vector3(0, 0, 1), new Vector3(1, 1, 0));
             scene.AddObject(p);
@@ -39,7 +41,7 @@ namespace template
             Plane p2 = new Plane(new Vector3(40, 0, 0.1f), new Vector3(-1, 0, 1), new Vector3(10, 10, 10));
             //scene.AddObject(p2);
 
-            Sphere s1 = new Sphere(new Vector3(0, 2, 1), 2, new Vector3(1.0f, 0.4f, 1.0f));
+            Sphere s1 = new Sphere(new Vector3(2, 2, 5), 2, new Vector3(1.0f, 0.4f, 1.0f));
             scene.AddObject(s1);
 
             Sphere s2 = new Sphere(new Vector3(0, -2, 1), 2, new Vector3(0.0f, 0.9f, .0f));
@@ -77,7 +79,7 @@ namespace template
                     Intersection intersect = scene.intersectScene(ray);
                     if (shadowraydebug)
                     {
-                        DebugRay(ray, intersect);
+                        DebugRay(ray, intersect, CreateColor(intersect.Color));
                         shadowraydebug = false;
                         //Console.WriteLine(x + " Intersection: " + intersect.Color);
                     }
@@ -109,31 +111,28 @@ namespace template
             foreach(Light lightSource in scene.lightSources)
             {
                 Vector3 lightD = (lightSource.position - intersect.intersectionPoint).Normalized();
-                float angle = Vector3.Dot(lightD, intersect.normal);
-
-                float cos = (float) MathHelper.Clamp( Math.Cos(angle), 0, 1);
-
-                if(cos > 0)
+                float cos = Vector3.Dot(lightD, intersect.normal);
+                
+                if (cos >= 0)
                 {
                     Vector3 startPoint = intersect.intersectionPoint + Lambda * lightD;
                     Ray shadowRay = new Ray(startPoint, lightD);
                     // if we hit nothing
                     if ( !scene.intersectSceneShadow(shadowRay) )
                     {
-                        totalIllumination += (lightSource.color * lightSource.intensity * cos);
+                        Vector3 d = lightSource.position - shadowRay.origin;
+
+                        Vector3 color = (lightSource.color * lightSource.intensity * cos / d.LengthSquared);
+                        
+                        totalIllumination += color;
 
                         if (shadowraydebug)
-                        {
-                            DebugShadowRay(shadowRay, lightSource, 0x00ff00);
-                        }
+                            DebugShadowRay(shadowRay, lightSource, CreateColor(color));
                     }
                     else if(shadowraydebug)
-                    {
                         DebugShadowRay(shadowRay, lightSource, 0xff0000);
-                    }
+                    
                 }
-                
-                
             }
             return totalIllumination;
         }
@@ -197,7 +196,7 @@ namespace template
 
 
         // draw a debug line for the specified ray.
-        public void DebugRay(Ray ray, Intersection i)
+        public void DebugRay(Ray ray, Intersection i, int c)
         {
             Vector3 startPoint = ray.origin;
             Vector3 endPoint;
@@ -213,7 +212,7 @@ namespace template
             int x2 = DebugX(endPoint.Y);
             int y2 = DebugY(endPoint.X);
 
-            screen.Line(x1, y1, x2, y2, 0xffff00);
+            screen.Line(x1, y1, x2, y2, c);
         
             
         }
