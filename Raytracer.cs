@@ -31,17 +31,17 @@ namespace template
 
             // initialize the scene with a few object (only one plane atm)
             scene = new Scene();
-            scene.AddLight(new Vector3(-5, 6, 1f), 5000, new Vector3(1, 1, 1));
-            scene.AddLight(new Vector3(3, -6, 5f), 5000, new Vector3(1, 1, 1));
+            scene.AddLight(new Vector3(0, -5, 10f), 3000, new Vector3(1, 1, 1));
+            scene.AddLight(new Vector3(-5, 2, 1f), 2500, new Vector3(1, 1, 1));
             //scene.AddLight(new Vector3(0, 0, 20), 5000, new Vector3(1, 1, 1));
 
-            Plane p = new Plane(new Vector3(0, 0, 0), new Vector3(0, 0, 1), new Vector3(1, 1, 0));
+            Plane p = new Plane(new Vector3(0, 0, 0), new Vector3(0, 0, 1), new Vector3(1f, 1f, 0));
             scene.AddObject(p);
 
-            Plane p2 = new Plane(new Vector3(40, 0, 0.1f), new Vector3(-1, 0, 1), new Vector3(100, 100, 1000));
+            Plane p2 = new Plane(new Vector3(40, 0, 0f), new Vector3(-1, 0, 0.2f), new Vector3(80, 80, 800));
             scene.AddObject(p2);
 
-            Sphere s1 = new Sphere(new Vector3(2, 3, 1), 2, new Vector3(1.0f, 0.4f, 1.0f));
+            Sphere s1 = new Sphere(new Vector3(2, 3, 1), 2, new Vector3(1.0f, 0.1f, 1.0f));
             scene.AddObject(s1);
 
             Sphere s2 = new Sphere(new Vector3(0, -2, 1), 2, new Vector3(0.0f, 0.9f, .0f));
