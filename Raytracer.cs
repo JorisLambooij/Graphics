@@ -46,6 +46,9 @@ namespace template
 
             Sphere s2 = new Sphere(new Vector3(0, -2, 1), 2, new Vector3(0.0f, 0.9f, .0f));
             scene.AddObject(s2);
+
+            Triangle t = new Triangle(new Vector3(0, 0, 1), new Vector3(1, 0, 0), new Vector2(0, 1), new Vector2(1, 1), new Vector2(0, 1), new Vector3(1f, 0, 0.5f));
+            scene.AddObject(t);
         }
 
         public void Render()
@@ -191,6 +194,11 @@ namespace template
                             screen.Line(x1, y1, x2, y2, CreateColor(sp.color));
                         }
                     }
+                }
+                if (p is Triangle)
+                {
+                    screen.Print("TRIANGLE", DebugX(p.position.Y), DebugY(p.position.X) - 10, CreateColor(p.color));
+                    
                 }
             }
             foreach (Light l in scene.lightSources)
