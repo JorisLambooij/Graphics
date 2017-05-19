@@ -32,8 +32,8 @@ namespace template
 
             // initialize the scene with a few object (only one plane atm)
             scene = new Scene();
-            scene.AddLight(new Vector3(0, -5, 10f), 30000, new Vector3(1, 1, 1));
-            scene.AddLight(new Vector3(-5, 2, 1f), 25000, new Vector3(1, 1, 1));
+            scene.AddLight(new Vector3(0, -5, 10f), 3000, new Vector3(1, 1, 1));
+            scene.AddLight(new Vector3(-5, 2, 1f), 2000, new Vector3(1, 1, 1));
 
             Plane p = new Plane(new Vector3(0, 0, 0), new Vector3(0, 0, 1), new Vector3(1f, 1f, 0));
             scene.AddObject(p);
@@ -44,12 +44,12 @@ namespace template
             Sphere s1 = new Sphere(new Vector3(2, 3, 1), 2, new Vector3(1.0f, 0.1f, 1.0f));
             scene.AddObject(s1);
 
-            Sphere s2 = new Sphere(new Vector3(0, -2, 1), 2, new Vector3(0.0f, 0.9f, .0f));
+            Sphere s2 = new Sphere(new Vector3(0, -2, 1), 2, new Vector3(0.0f, 1.0f, .0f));
             scene.AddObject(s2);
             
-            Sphere s3 = new Sphere(new Vector3(-2, 0, 1), 1, new Vector3(1.0f, 1.0f, 1.0f));
-            s3.transparency = 0.5f;
-            s3.refractionIndex = 1.5f;
+            Sphere s3 = new Sphere(new Vector3(-2.5f, 0, 1), 1, new Vector3(1.0f, 1.0f, 1.0f));
+            s3.transparency = 0.8f;
+            s3.refractionIndex = 2.15f;
             scene.AddObject(s3);
 
             Triangle t = new Triangle(new Vector3(0, 0, 1), new Vector3(1, 0, 0), new Vector2(0, 1), new Vector2(1, 1), new Vector2(0, 1), new Vector3(1f, 0, 0.5f));
@@ -71,11 +71,12 @@ namespace template
                     Vector3 pixelDirection = camera.direction + new Vector3(0, (x * xSteps) - 0.5f, -(y * ySteps) + 0.5f);
                     Ray ray = new Ray(camera.position, pixelDirection.Normalized());
 
-                    if (x % 32 == 0 && ray.direction.Z == 0)
+                    if (x % 16 == 0 && ray.direction.Z == 0)
                         debugFrame = true;
                     
-                    Ray TRay = TraceRay(ray, 0);
-                    Vector3 color = TRay.color * (1 / (TRay.distanceTraveled));
+                    Ray tRay = TraceRay(ray, 0);
+                    float inverseSquare = 1 / (tRay.distanceTraveled * tRay.distanceTraveled);
+                    Vector3 color = tRay.color * inverseSquare;
 
                     screen.pixels[x + y * screen.width] = CreateColor(color);
                     
@@ -107,7 +108,7 @@ namespace template
             // hitting something not transparent
             else if(intersect.collider.transparency == 0)
             {
-                Vector3 color = DirectIllumination(intersect) * intersect.Color;
+                Vector3 color = DirectIllumination(intersect) * intersect.collider.color;
                 ray.distanceTraveled += intersect.distance;
                 ray.color = color;
                 return ray;
@@ -115,22 +116,60 @@ namespace template
             // hitting transparent object, going into recursion
             else if(recursion < recursionCap)
             {
-                Vector3 newDirection = ray.direction;
+                //Vector3 newDirection = ray.direction;
+
+                Vector3 newDirection;
                 Vector3 newOrigin = intersect.intersectionPoint;
-                Ray newRay = new Ray(newOrigin, newDirection);
+                Ray newRay;
+                if (ray.refract == Ray.Refract.Outside)
+                {
+                    //newDirection = ray.direction;
+                    newDirection = Refraction(ray.direction, intersect.normal, 1, intersect.collider.refractionIndex);
+
+                    newRay = new Ray(newOrigin, newDirection);
+                    newRay.refract = Ray.Refract.Inside;
+                }
+                else
+                {
+                    newDirection = Refraction(ray.direction, intersect.normal, intersect.collider.refractionIndex, 1);
+
+                    newRay = new Ray(newOrigin, newDirection);
+                    newRay.refract = Ray.Refract.Outside;
+                }
                 newRay.distanceTraveled = ray.distanceTraveled + intersect.distance;
+
+                Ray returnRay = TraceRay(newRay, recursion + 1);
+                returnRay.color *= intersect.collider.transparency;
 
                 if (debugFrame)
                 {
                     Intersection inter = scene.intersectScene(newRay);
-                    DebugRay(newRay, inter, CreateColor( intersect.Color));
+                    DebugRay(newRay, inter, CreateColor(returnRay.color));
                 }
 
-                return TraceRay(newRay, recursion + 1);
+                return returnRay;
             }
             else
                 return null;
+        }
+
+        Vector3 Refraction(Vector3 d, Vector3 n, float n1, float n2)
+        {
+            Vector3 u1 = n * Vector3.Dot(n, d);
+            Vector3 v1 = d - u1;
+
+            float uMag = u1.Length;
+            float vMag = v1.Length;
+
+            float angle1 = (float) Math.Acos(Vector3.Dot(d, n));
+            float angle2 = (float) Math.Asin(Math.Sin(angle1) * (n1 / n2));
+            float cos2 = (float) Math.Cos(angle2);
+            float sin2 = (float)Math.Sin(angle2);
+
+            Vector3 v2 = v1 * (sin2 / vMag);
+            Vector3 u2 = u1 * (cos2 / uMag);
             
+            return v2 + u2;
         }
 
         public Vector3 DirectIllumination(Intersection intersect)
@@ -154,7 +193,9 @@ namespace template
 
                     // debug stuff
                     if (debugFrame)
-                        DebugShadowRay(shadowRay, lightSource, CreateColor(totalIllumination));
+                    {
+                        //DebugShadowRay(shadowRay, lightSource, CreateColor(totalIllumination));
+                    }
                 }
             }
             return totalIllumination;
@@ -163,7 +204,7 @@ namespace template
 
         #region Debug
         // screen scale relative to world scale
-        float scale = -50;
+        float scale = -64;
 
         // offsets in SCREEN COORDINATES
         // important because the axes are flipped

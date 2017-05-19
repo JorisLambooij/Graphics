@@ -40,10 +40,6 @@ namespace template
         {
             if( (ray.origin - position).LengthSquared < radius * radius)
             {
-                if (ray.direction.Yz == Vector2.Zero)
-                {
-                    int xd = 0;
-                }
                 // ray starts inside the sphere
                 Vector3 o_c = ray.origin - position;
                 float dot = Vector3.Dot(ray.direction, o_c);
@@ -58,6 +54,7 @@ namespace template
                 inter.intersectionPoint = ray.origin + d * ray.direction;
 
                 inter.distance = d;
+                inter.normal = (this.position - inter.intersectionPoint).Normalized();
                 inter.collider = this;
 
                 return inter;
@@ -176,17 +173,6 @@ namespace template
             this.direction = ray.direction;
             this.intersectionPoint = ray.origin + distance * ray.direction;
         }
-
-        public Vector3 Color
-        {
-            get
-            {
-                if (collider != null)
-                    return collider.color / (distance * distance);
-                else
-                    return Vector3.Zero;
-            }
-        }
     }
 
     class Light
@@ -205,12 +191,15 @@ namespace template
 
     class Ray
     {
+        public enum Refract { Outside, Inside };
+        public Refract refract;
+
         public Vector3 origin;
         public Vector3 direction;
 
         public float distanceTraveled;
         public Vector3 color;
-
+        
         public Ray(Vector3 origin, Vector3 direction)
         {
             this.origin = origin;
@@ -218,6 +207,8 @@ namespace template
 
             color = Vector3.Zero;
             distanceTraveled = 0;
+
+            refract = Refract.Outside;
         }
     }
 }
