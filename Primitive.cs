@@ -207,12 +207,17 @@ namespace template
     {
         public Vector3 origin;
         public Vector3 direction;
-        public float distance;
+
+        public float distanceTraveled;
+        public Vector3 color;
 
         public Ray(Vector3 origin, Vector3 direction)
         {
             this.origin = origin;
             this.direction = direction;
+
+            color = Vector3.Zero;
+            distanceTraveled = 0;
         }
     }
 }

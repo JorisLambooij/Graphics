@@ -32,8 +32,8 @@ namespace template
 
             // initialize the scene with a few object (only one plane atm)
             scene = new Scene();
-            scene.AddLight(new Vector3(0, -5, 10f), 3000, new Vector3(1, 1, 1));
-            scene.AddLight(new Vector3(-5, 2, 1f), 2500, new Vector3(1, 1, 1));
+            scene.AddLight(new Vector3(0, -5, 10f), 30000, new Vector3(1, 1, 1));
+            scene.AddLight(new Vector3(-5, 2, 1f), 25000, new Vector3(1, 1, 1));
 
             Plane p = new Plane(new Vector3(0, 0, 0), new Vector3(0, 0, 1), new Vector3(1f, 1f, 0));
             scene.AddObject(p);
@@ -71,17 +71,19 @@ namespace template
                     Vector3 pixelDirection = camera.direction + new Vector3(0, (x * xSteps) - 0.5f, -(y * ySteps) + 0.5f);
                     Ray ray = new Ray(camera.position, pixelDirection.Normalized());
 
-                    if (x % 16 == 0 && ray.direction.Z == 0)
+                    if (x % 32 == 0 && ray.direction.Z == 0)
                         debugFrame = true;
                     
-                    Vector3 color = TraceRay(ray, 0);
+                    Ray TRay = TraceRay(ray, 0);
+                    Vector3 color = TRay.color * (1 / (TRay.distanceTraveled));
+
                     screen.pixels[x + y * screen.width] = CreateColor(color);
                     
                     // keep for Debug (for now)
                     Intersection intersect = scene.intersectScene(ray);
                     if (debugFrame)
                     {
-                        DebugRay(ray, intersect, CreateColor(intersect.Color));
+                        DebugRay(ray, intersect, CreateColor(color));
                         debugFrame = false;
                     }
                 }
@@ -89,23 +91,34 @@ namespace template
             DebugView();
         }
 
-        public Vector3 TraceRay(Ray ray, int recursion)
+        public Ray TraceRay(Ray ray, int recursion)
         {
             ray.origin = ray.origin + Lambda * ray.direction;
             Intersection intersect = scene.intersectScene(ray);
 
             // did not hit anything, return black
             if (intersect.collider == null)
-                return Vector3.Zero;
+            {
+                //ray.distanceTraveled = float.PositiveInfinity;
+                ray.color = Vector3.Zero;
+                return ray;
+            }
             // TODO: check for materials
+            // hitting something not transparent
             else if(intersect.collider.transparency == 0)
-                return DirectIllumination(intersect) * intersect.Color;
-            
+            {
+                Vector3 color = DirectIllumination(intersect) * intersect.Color;
+                ray.distanceTraveled += intersect.distance;
+                ray.color = color;
+                return ray;
+            }
+            // hitting transparent object, going into recursion
             else if(recursion < recursionCap)
             {
                 Vector3 newDirection = ray.direction;
                 Vector3 newOrigin = intersect.intersectionPoint;
                 Ray newRay = new Ray(newOrigin, newDirection);
+                newRay.distanceTraveled = ray.distanceTraveled + intersect.distance;
 
                 if (debugFrame)
                 {
@@ -116,7 +129,8 @@ namespace template
                 return TraceRay(newRay, recursion + 1);
             }
             else
-                return Vector3.Zero;
+                return null;
+            
         }
 
         public Vector3 DirectIllumination(Intersection intersect)
@@ -140,7 +154,7 @@ namespace template
 
                     // debug stuff
                     if (debugFrame)
-                        DebugShadowRay(shadowRay, lightSource, CreateColor(color));
+                        DebugShadowRay(shadowRay, lightSource, CreateColor(totalIllumination));
                 }
             }
             return totalIllumination;
@@ -149,7 +163,7 @@ namespace template
 
         #region Debug
         // screen scale relative to world scale
-        float scale = -64;
+        float scale = -50;
 
         // offsets in SCREEN COORDINATES
         // important because the axes are flipped
