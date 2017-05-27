@@ -19,3 +19,4 @@ C:\Users\Lex\Documents\Graphicsschool\bin\Debug\OpenTK.dll
 C:\Users\Lex\Documents\Graphicsschool\obj\Debug\template.csprojResolveAssemblyReference.cache
 C:\Users\Lex\Documents\Graphicsschool\obj\Debug\template.exe
 C:\Users\Lex\Documents\Graphicsschool\obj\Debug\template.pdb
+C:\Users\Joris\Documents\_Study\Graphics\bin\Debug\textures\earth.png

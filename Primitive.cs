@@ -1,6 +1,7 @@
 ﻿using OpenTK;
 using System;
 using System.Collections.Generic;
+using System.Drawing;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -12,6 +13,8 @@ namespace template
         public Vector3 position;
         public Vector3 color;
 
+        public Bitmap texture;
+
         public float refractionIndex;
         public float transparency;
 
@@ -22,14 +25,20 @@ namespace template
 
             this.refractionIndex = refractionIndex;
             this.transparency = transparency;
+
+
         }
 
         public abstract Intersection intersectPrimitive(Ray ray);
-    }
 
+        public abstract Vector3 colorFromTexture(Vector3 position);
+    }
+    
     class Sphere : Primitive
     {
         public float radius;
+
+        public float RadiansToPercentage = (float) (0.5f / Math.PI);
 
         public Sphere(Vector3 position, float radius, Vector3 color) : base (position, color)
         {
@@ -85,6 +94,29 @@ namespace template
 
             return i;
         }
+
+        public override Vector3 colorFromTexture(Vector3 position)
+        {
+            if (this.texture == null)
+                throw new Exception("This object (Sphere) does not have a texture");
+
+            Vector3 normal = position - this.position;
+
+            // calculate circular angles theta(x/y) and phi(z)
+            // take only x and y coordinates from the normal to make it "flat", to calculate the angle on the x/y-plane
+            Vector3 flatNormal = new Vector3(normal.X, normal.Y, 0);
+            flatNormal.Normalize();
+            float theta = (float) (Math.Atan(flatNormal.Y / flatNormal.X) + Math.PI);
+            float phi = Vector3.CalculateAngle(Vector3.UnitZ, normal);
+
+            // use those angles to determine x and y on the texture
+            int x = (int) ( (1 - theta * RadiansToPercentage) * texture.Width);
+            int y = (int) ( 2 * phi * RadiansToPercentage * texture.Height);
+
+            Color color = texture.GetPixel(x, y);
+            float colorRatio = 1f / 255f;
+            return new Vector3(color.R * colorRatio, color.G * colorRatio, color.B * colorRatio);
+        }
     }
 
     class Plane : Primitive
@@ -116,6 +148,11 @@ namespace template
 
             return i;
         }
+
+        public override Vector3 colorFromTexture(Vector3 position)
+        {
+            throw new NotImplementedException();
+        }
     }
     class Triangle : Primitive
     {
@@ -145,6 +182,11 @@ namespace template
             i.collider = this;
 
             return i;
+        }
+
+        public override Vector3 colorFromTexture(Vector3 position)
+        {
+            throw new NotImplementedException();
         }
     }
 
