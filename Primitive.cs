@@ -38,6 +38,10 @@ namespace template
     {
         public float radius;
 
+        //to tilt/rotate the sphere (only for textures spheres)
+        public float thetaOffset = 0;
+        public float phiOffset = 0;
+
         public float RadiansToPercentage = (float) (0.5f / Math.PI);
 
         public Sphere(Vector3 position, float radius, Vector3 color) : base (position, color)
@@ -94,7 +98,7 @@ namespace template
 
             return i;
         }
-
+        
         public override Vector3 colorFromTexture(Vector3 position)
         {
             if (this.texture == null)
@@ -103,16 +107,29 @@ namespace template
             Vector3 normal = position - this.position;
 
             // calculate circular angles theta(x/y) and phi(z)
-            // take only x and y coordinates from the normal to make it "flat", to calculate the angle on the x/y-plane
-            Vector3 flatNormal = new Vector3(normal.X, normal.Y, 0);
-            flatNormal.Normalize();
-            float theta = (float) (Math.Atan(flatNormal.Y / flatNormal.X) + Math.PI);
             float phi = Vector3.CalculateAngle(Vector3.UnitZ, normal);
+            float theta = (float) (Math.Atan(normal.Y / normal.X) + Math.PI) + thetaOffset;
 
             // use those angles to determine x and y on the texture
             int x = (int) ( (1 - theta * RadiansToPercentage) * texture.Width);
             int y = (int) ( 2 * phi * RadiansToPercentage * texture.Height);
-
+            /*
+            if (y < 0)
+            {
+                y = -y;
+                x += texture.Width / 2;
+            }
+            else if (y >= texture.Height)
+            {
+                y = 2 * texture.Height - y - 1;
+                x += texture.Width / 2;
+            }
+            */
+            if (x < 0)
+                x += texture.Width;
+            else if (x >= texture.Width)
+                x -= texture.Width;
+            
             Color color = texture.GetPixel(x, y);
             float colorRatio = 1f / 255f;
             return new Vector3(color.R * colorRatio, color.G * colorRatio, color.B * colorRatio);

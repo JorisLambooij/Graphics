@@ -44,11 +44,12 @@ namespace template
             Sphere s1 = new Sphere(new Vector3(2, 3, 1), 2, new Vector3(1.0f, 0.1f, 1.0f));
             scene.AddObject(s1);
 
-            Sphere s2 = new Sphere(new Vector3(2, -2, 1), 3, new Vector3(1.0f, 1.0f, 1.0f));
+            Sphere s2 = new Sphere(new Vector3(2, -2, 3), 3, new Vector3(1.0f, 1.0f, 1.0f));
             s2.texture = new System.Drawing.Bitmap("textures/earth.png");
+            //s2.phiOffset = -1f;
             scene.AddObject(s2);
             
-            Sphere s3 = new Sphere(new Vector3(-2.5f, 0, 1.2f), 1, new Vector3(1.0f, 1.0f, 1.0f));
+            Sphere s3 = new Sphere(new Vector3(-2.5f, 1, 1.2f), 1, new Vector3(1.0f, 1.0f, 1.0f));
             s3.transparency = 0.8f;
             s3.refractionIndex = 2f;
             scene.AddObject(s3);

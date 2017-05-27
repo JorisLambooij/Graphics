@@ -23,23 +23,24 @@ namespace template {
             rayTracer.Render();
         }
 
+        protected float angularSteps = (float) (2 * Math.PI / 12);
         public void Input(InputHandler input)
         {
             if (input.KeyDown(Key.Right))
             {
-                rayTracer.scene.sceneObjects[2].position.Y += 0.5f;
+                ((Sphere)rayTracer.scene.sceneObjects[3]).thetaOffset += angularSteps;
             }
             else if (input.KeyDown(Key.Left))
             {
-                rayTracer.scene.sceneObjects[2].position.Y -= 0.5f;
+                ((Sphere)rayTracer.scene.sceneObjects[3]).thetaOffset -= angularSteps;
             }
             if (input.KeyDown(Key.Up))
             {
-                rayTracer.scene.sceneObjects[2].position.Z += 0.5f;
+                ((Sphere)rayTracer.scene.sceneObjects[3]).phiOffset += 0.5f * angularSteps;
             }
             else if (input.KeyDown(Key.Down))
             {
-                rayTracer.scene.sceneObjects[2].position.Z -= 0.5f;
+                ((Sphere)rayTracer.scene.sceneObjects[3]).phiOffset -= 0.5f * angularSteps;
             }
         }
     }
