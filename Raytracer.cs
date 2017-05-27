@@ -35,7 +35,7 @@ namespace template
             scene.AddLight(new Vector3(0, -5, 10f), 3000, new Vector3(1, 1, 1));
             scene.AddLight(new Vector3(-5, 2, 1f), 2000, new Vector3(1, 1, 1));
 
-            Plane p = new Plane(new Vector3(0, 0, 0), new Vector3(0, 0, 1), new Vector3(1f, 1f, 0));
+            Plane p = new Plane(new Vector3(0, 0, 0), new Vector3(0, 0, 1), new Vector3(1f, 0f, 0));
             scene.AddObject(p);
 
             Plane p2 = new Plane(new Vector3(40, 0, 0f), new Vector3(-1, 0, 0.2f), new Vector3(80, 80, 800));
@@ -47,9 +47,9 @@ namespace template
             Sphere s2 = new Sphere(new Vector3(0, -2, 1), 2, new Vector3(0.0f, 1.0f, .0f));
             scene.AddObject(s2);
             
-            Sphere s3 = new Sphere(new Vector3(-2.5f, 0, 1), 1, new Vector3(1.0f, 1.0f, 1.0f));
+            Sphere s3 = new Sphere(new Vector3(-2.5f, 0, 1.2f), 1, new Vector3(1.0f, 1.0f, 1.0f));
             s3.transparency = 0.8f;
-            s3.refractionIndex = 2.15f;
+            s3.refractionIndex = 2f;
             scene.AddObject(s3);
 
             Triangle t = new Triangle(new Vector3(0, 0, 1), new Vector3(1, 0, 0), new Vector2(0, 1), new Vector2(1, 1), new Vector2(0, 1), new Vector3(1f, 0, 0.5f));
@@ -62,33 +62,84 @@ namespace template
 
             float xSteps = 1f / width;
             float ySteps = 1f / screen.height;
-            
+
             for (int x = 0; x < width; x++)
-                for(int y = 0; y < screen.height; y++)
+            {
+                // before each y-column, we need to calculate the result for "y = -1"
+                Vector3 previousVector1, previousVector2;
+                previousVector1 = camera.direction + new Vector3(0, (x + 0.5f) * xSteps - 0.5f, 0.5f * ySteps + 0.5f);
+                previousVector2 = camera.direction + new Vector3(0, (x - 0.5f) * xSteps - 0.5f, 0.5f * ySteps + 0.5f);
+
+                Ray previousRay1, previousRay2;
+                previousRay1 = TraceRay(new Ray(camera.position, previousVector1.Normalized()), 0);
+                previousRay2 = TraceRay(new Ray(camera.position, previousVector2.Normalized()), 0);
+
+                float previousInverseSquare1, previousInverseSquare2;
+                previousInverseSquare1 = 1 / (previousRay1.distanceTraveled * previousRay1.distanceTraveled);
+                previousInverseSquare2 = 1 / (previousRay2.distanceTraveled * previousRay2.distanceTraveled);
+
+                Vector3 previousColor1, previousColor2;
+                previousColor1 = previousRay1.color * previousInverseSquare1;
+                previousColor2 = previousRay2.color * previousInverseSquare2;
+
+                for (int y = 0; y < screen.height; y++)
                 {
+                    if (x % 16 == 0 && y == 255)
+                        debugFrame = true;
+
+                    /*
+                    // without anti-alias:
                     // for each pixel, cast a ray
                     // for now, use static camera, so the 2nd vector is simply calculated with x and y
                     Vector3 pixelDirection = camera.direction + new Vector3(0, (x * xSteps) - 0.5f, -(y * ySteps) + 0.5f);
                     Ray ray = new Ray(camera.position, pixelDirection.Normalized());
 
-                    if (x % 16 == 0 && ray.direction.Z == 0)
-                        debugFrame = true;
-                    
                     Ray tRay = TraceRay(ray, 0);
                     float inverseSquare = 1 / (tRay.distanceTraveled * tRay.distanceTraveled);
                     Vector3 color = tRay.color * inverseSquare;
 
                     screen.pixels[x + y * screen.width] = CreateColor(color);
+                    */
                     
+                    // with anti-alias: calculate the two "new" rays, then add the "previous" rays, and take the average color
+                    Vector3 currentVector1, currentVector2;
+
+                    currentVector1 = camera.direction + new Vector3(0, (x + 0.5f) * xSteps - 0.5f, -(y + 0.5f) * ySteps + 0.5f);
+                    currentVector2 = camera.direction + new Vector3(0, (x - 0.5f) * xSteps - 0.5f, -(y + 0.5f) * ySteps + 0.5f);
+
+                    Ray currentRay1, currentRay2;
+
+                    currentRay1 = TraceRay(new Ray(camera.position, currentVector1.Normalized()), 0);
+                    currentRay2 = TraceRay(new Ray(camera.position, currentVector2.Normalized()), 0);
+
+                    float currentInverseSquare1 = 1 / (currentRay1.distanceTraveled * currentRay1.distanceTraveled);
+                    float currentInverseSquare2 = 1 / (currentRay2.distanceTraveled * currentRay2.distanceTraveled);
+
+                    Vector3 currentColor1, currentColor2;
+
+                    currentColor1 = currentRay1.color * currentInverseSquare1;
+                    currentColor2 = currentRay2.color * currentInverseSquare2;
+
+
+                    Vector3 color = (previousColor1 + previousColor2 + currentColor1 + currentColor2) * 0.25f;
+
+                    screen.pixels[x + y * screen.width] = CreateColor(color);
+
+                    previousColor1 = currentColor1;
+                    previousColor2 = currentColor2;
+                    
+
                     // keep for Debug (for now)
-                    Intersection intersect = scene.intersectScene(ray);
+                    Intersection intersect = scene.intersectScene(currentRay1);
                     if (debugFrame)
                     {
-                        DebugRay(ray, intersect, CreateColor(color));
+                        DebugRay(currentRay1, intersect, CreateColor(color));
                         debugFrame = false;
                     }
+
                 }
 
+            }
             DebugView();
         }
 
@@ -186,9 +237,10 @@ namespace template
                     Vector3 startPoint = intersect.intersectionPoint + Lambda * lightD;
                     Ray shadowRay = new Ray(startPoint, lightD);
                     
-                    Vector3 d = lightSource.position - shadowRay.origin;
-                    Vector3 color = scene.intersectSceneShadow(shadowRay, lightSource) * (lightSource.color * lightSource.intensity * cos / d.LengthSquared);
-
+                    float d = 1 / (lightSource.position - shadowRay.origin).LengthSquared;
+                    
+                    Vector3 color = scene.intersectSceneShadow(shadowRay, lightSource) * (lightSource.color * lightSource.intensity * cos * d);
+                    
                     totalIllumination += color;
 
                     // debug stuff
@@ -204,7 +256,7 @@ namespace template
 
         #region Debug
         // screen scale relative to world scale
-        float scale = -64;
+        float scale = -48;
 
         // offsets in SCREEN COORDINATES
         // important because the axes are flipped
