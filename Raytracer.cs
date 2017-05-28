@@ -23,10 +23,35 @@ namespace template
         public void Init(Surface screen)
         {
             this.screen = screen;
-            // camera setup
-            Vector3 camPos = new Vector3(-10, 0, 3);
-            Vector3 camDir = new Vector3(1, 0, -0.2f);
+            //// camera setup
+            //Vector3 camPos = new Vector3(-10, 0, 3);
+            //Vector3 camDir = new Vector3(1, 0, -0.2f);
             float view = 1;
+
+            //x, y en z waardes opslaan.
+            float[] cameraValues = new float[3];
+            Vector3 camPos, camDir;
+
+            //Aparte camera invoer
+            Console.WriteLine("Enter camera postition");
+            for (int i = 0; i < 3; i++)
+            {
+                Console.Write(Convert.ToChar(i + 120) + " = ");
+                cameraValues[i] = float.Parse(Console.ReadLine());
+            }
+            camPos = new Vector3(cameraValues[0], cameraValues[1], cameraValues[2]);
+
+            Console.WriteLine("Enter camera direction");
+            for (int i = 0; i < 3; i++)
+            {
+                Console.Write(Convert.ToChar(i + 120) + " = ");
+                cameraValues[i] = float.Parse(Console.ReadLine());
+            }
+            camDir = new Vector3(cameraValues[0], cameraValues[1], cameraValues[2]);
+
+
+
+            //view = float.Parse(Console.ReadLine());
             camera = new Camera(camPos, camDir, view);
 
 

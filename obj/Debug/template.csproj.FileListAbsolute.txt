@@ -23,3 +23,13 @@ C:\Users\Joris\Documents\_Study\Graphics\bin\Debug\textures\earth.png
 C:\Users\Joris\Documents\_Study\Graphics\bin\Debug\textures\blue clouded skydome HDR.hdr
 C:\Users\Joris\Documents\_Study\Graphics\bin\Debug\textures\sky.jpg
 C:\Users\Joris\Documents\_Study\Graphics\bin\Debug\textures\sky2.jpg
+C:\Users\Thomas\Documents\Graphics2\bin\Debug\template.exe.config
+C:\Users\Thomas\Documents\Graphics2\obj\Debug\template.exe
+C:\Users\Thomas\Documents\Graphics2\obj\Debug\template.pdb
+C:\Users\Thomas\Documents\Graphics2\bin\Debug\textures\sky.jpg
+C:\Users\Thomas\Documents\Graphics2\bin\Debug\textures\sky2.jpg
+C:\Users\Thomas\Documents\Graphics2\bin\Debug\textures\earth.png
+C:\Users\Thomas\Documents\Graphics2\bin\Debug\OpenTK.dll
+C:\Users\Thomas\Documents\Graphics2\obj\Debug\template.csprojResolveAssemblyReference.cache
+C:\Users\Thomas\Documents\Graphics2\bin\Debug\template.exe
+C:\Users\Thomas\Documents\Graphics2\bin\Debug\template.pdb
