@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
+using System.Drawing;
 using System.Text;
 using System.Threading.Tasks;
 using OpenTK;
@@ -24,34 +24,35 @@ namespace template
         {
             this.screen = screen;
             // camera setup
-            Vector3 camPos = new Vector3(-10, 0, 1);
-            Vector3 camDir = new Vector3(1, 0, 0);
+            Vector3 camPos = new Vector3(-10, 0, 3);
+            Vector3 camDir = new Vector3(1, 0, -0.2f);
             float view = 1;
             camera = new Camera(camPos, camDir, view);
 
 
             // initialize the scene with a few object (only one plane atm)
             scene = new Scene();
-            scene.AddLight(new Vector3(0, -5, 10f), 3000, new Vector3(1, 1, 1));
-            scene.AddLight(new Vector3(-5, 2, 1f), 2000, new Vector3(1, 1, 1));
+            scene.AddLight(new Vector3(0, -5, 10f), 4000, new Vector3(1, 1, 1));
+            scene.AddLight(new Vector3(-5, 2, 1f), 3000, new Vector3(1, 1, 1));
+
+            scene.skydome = new Bitmap("textures/sky2.jpg");
 
             Plane p = new Plane(new Vector3(0, 0, 0), new Vector3(0, 0, 1), new Vector3(1f, 0f, 0));
             scene.AddObject(p);
 
             Plane p2 = new Plane(new Vector3(40, 0, 0f), new Vector3(-1, 0, 0.2f), new Vector3(80, 80, 800));
-            scene.AddObject(p2);
+            //scene.AddObject(p2);
 
             Sphere s1 = new Sphere(new Vector3(2, 3, 1), 2, new Vector3(1.0f, 0.1f, 1.0f));
             scene.AddObject(s1);
 
-            Sphere s2 = new Sphere(new Vector3(2, -2, 3), 3, new Vector3(1.0f, 1.0f, 1.0f));
-            s2.texture = new System.Drawing.Bitmap("textures/earth.png");
-            //s2.phiOffset = -1f;
+            Sphere s2 = new Sphere(new Vector3(2, -2, 3), 3, new Vector3(1.2f, 1.2f, 1.2f));
+            s2.texture = new Bitmap("textures/earth.png");
             scene.AddObject(s2);
             
             Sphere s3 = new Sphere(new Vector3(-2.5f, 1, 1.2f), 1, new Vector3(1.0f, 1.0f, 1.0f));
             s3.transparency = 0.8f;
-            s3.refractionIndex = 2f;
+            s3.refractionIndex = 1.5f;
             scene.AddObject(s3);
 
             Triangle t = new Triangle(new Vector3(0, 0, 1), new Vector3(1, 0, 0), new Vector2(0, 1), new Vector2(1, 1), new Vector2(0, 1), new Vector3(1f, 0, 0.5f));
@@ -86,7 +87,7 @@ namespace template
 
                 for (int y = 0; y < screen.height; y++)
                 {
-                    if (x % 16 == 0 && y == 255)
+                    if (x % 16 == 0 && y == 256)
                         debugFrame = true;
 
                     /*
@@ -129,13 +130,15 @@ namespace template
 
                     previousColor1 = currentColor1;
                     previousColor2 = currentColor2;
-                    
+
 
                     // keep for Debug (for now)
-                    Intersection intersect = scene.intersectScene(currentRay1);
+                    Vector3 pixelDirection = camera.direction + new Vector3(0, (x * xSteps) - 0.5f, -(y * ySteps) + 0.5f);
+                    Ray debugRay = new Ray(camera.position, pixelDirection);
+                    Intersection intersect = scene.intersectScene(debugRay);
                     if (debugFrame)
                     {
-                        DebugRay(currentRay1, intersect, CreateColor(color));
+                        DebugRay(debugRay, intersect, CreateColor(color));
                         debugFrame = false;
                     }
                 }
@@ -148,11 +151,13 @@ namespace template
             ray.origin = ray.origin + Lambda * ray.direction;
             Intersection intersect = scene.intersectScene(ray);
 
-            // did not hit anything, return black
+            // did not hit anything, return skydome
             if (intersect.collider == null)
             {
-                //ray.distanceTraveled = float.PositiveInfinity;
-                ray.color = Vector3.Zero;
+                ray.color = scene.SkydomeColor(ray.direction);
+                // set distance to 1 to avoid distance attenuation (would be 1 / infinity = 0 = black otherwise
+                // TODO: make skydome HDR instead of setting the distance to 1
+                ray.distanceTraveled = 1f;
                 return ray;
             }
             // TODO: check for materials

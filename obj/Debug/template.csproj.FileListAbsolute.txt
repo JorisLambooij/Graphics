@@ -20,3 +20,6 @@ C:\Users\Lex\Documents\Graphicsschool\obj\Debug\template.csprojResolveAssemblyRe
 C:\Users\Lex\Documents\Graphicsschool\obj\Debug\template.exe
 C:\Users\Lex\Documents\Graphicsschool\obj\Debug\template.pdb
 C:\Users\Joris\Documents\_Study\Graphics\bin\Debug\textures\earth.png
+C:\Users\Joris\Documents\_Study\Graphics\bin\Debug\textures\blue clouded skydome HDR.hdr
+C:\Users\Joris\Documents\_Study\Graphics\bin\Debug\textures\sky.jpg
+C:\Users\Joris\Documents\_Study\Graphics\bin\Debug\textures\sky2.jpg

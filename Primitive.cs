@@ -42,7 +42,7 @@ namespace template
         public float thetaOffset = 0;
         public float phiOffset = 0;
 
-        public float RadiansToPercentage = (float) (0.5f / Math.PI);
+        public static float RadiansToPercentage = (float) (0.5f / Math.PI);
 
         public Sphere(Vector3 position, float radius, Vector3 color) : base (position, color)
         {

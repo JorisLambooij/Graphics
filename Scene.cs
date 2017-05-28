@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
+using System.Drawing;
 using System.Text;
 using System.Threading.Tasks;
 using OpenTK;
@@ -11,7 +11,9 @@ namespace template
     {
         public List<Primitive> sceneObjects;
         public List<Light> lightSources;
-        
+
+        public Bitmap skydome;
+
         public Scene()
         {
             sceneObjects = new List<Primitive>();
@@ -33,6 +35,24 @@ namespace template
                 }
             }
             return nearestIntersection;
+        }
+
+        public Vector3 SkydomeColor(Vector3 direction)
+        {
+            if (skydome == null)
+                return Vector3.Zero;
+
+            // calculate circular angles theta(x/y) and phi(z)
+            float phi = Vector3.CalculateAngle(Vector3.UnitZ, direction);
+            float theta = (float)(Math.Atan(direction.Y / direction.X) + Math.PI);
+
+            // use those angles to determine x and y on the texture
+            int x = (int)((1 - theta * Sphere.RadiansToPercentage) * skydome.Width);
+            int y = (int)(2 * phi * Sphere.RadiansToPercentage * skydome.Height);
+            
+            Color color = skydome.GetPixel(x, y);
+            float colorRatio = 1f / 255f;
+            return new Vector3(color.R * colorRatio, color.G * colorRatio, color.B * colorRatio);
         }
 
         public float intersectSceneShadow(Ray ray, Light lightSource)
