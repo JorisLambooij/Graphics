@@ -85,9 +85,6 @@
     </Content>
     <None Include="App.config" />
     <None Include="packages.config" />
-    <Content Include="textures\blue clouded skydome HDR.hdr">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
   </ItemGroup>
   <ItemGroup>
     <BootstrapperPackage Include="Microsoft.Net.Client.3.5">
