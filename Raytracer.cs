@@ -26,7 +26,9 @@ namespace template
             //// camera setup
             //Vector3 camPos = new Vector3(-10, 0, 3);
             //Vector3 camDir = new Vector3(1, 0, -0.2f);
-            float view = 1;
+            //float view = 1;
+            float angle, view;
+            Vector3 FOVCamPos;
 
             //x, y en z waardes opslaan.
             float[] cameraValues = new float[3];
@@ -52,6 +54,24 @@ namespace template
 
             camPos = new Vector3(-10, 0, 1);
             camDir = new Vector3(1, 0, 0);
+
+
+
+            Console.WriteLine("Enter angle");
+            Console.Write("Angle in degrees = ");
+            angle = float.Parse(Console.ReadLine()) * (float)(Math.PI / 180);
+
+            //view = 0,5 van screenPlane / tan(angle / 2).
+            view = 1f / (float)Math.Tan(angle / 2f);
+            Console.WriteLine("view = " + view);
+            Console.WriteLine("Tan(angle / 2) = " + (float)Math.Tan(angle / 2f));
+            //Camera Positie aangepast aan de hand van de angle.
+            Console.WriteLine("camPos = " + camPos);
+            FOVCamPos = camPos + (-view * camDir);
+            Console.WriteLine("FOVCamPos = " + FOVCamPos);
+            camPos = FOVCamPos;
+
+
 
             //view = float.Parse(Console.ReadLine());
             camera = new Camera(camPos, camDir, view);

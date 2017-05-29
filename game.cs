@@ -42,6 +42,15 @@ namespace template {
             {
                 ((Sphere)rayTracer.scene.sceneObjects[3]).phiOffset -= 0.5f * angularSteps;
             }
+
+            if (input.KeyDown(Key.W))
+            {
+                rayTracer.camera.position.X++;
+            }
+            else if (input.KeyDown(Key.S))
+            {
+                rayTracer.camera.position.X--;
+            }
         }
     }
 

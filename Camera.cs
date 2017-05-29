@@ -21,9 +21,6 @@ namespace template
             this.direction = direction;
             this.viewDistance = viewDistance;
             screenPlane = new Vector2(2, 2);
-
-
-
         }
 
         Vector3 screenUp
