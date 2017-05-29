@@ -31,7 +31,7 @@ namespace template
             //x, y en z waardes opslaan.
             float[] cameraValues = new float[3];
             Vector3 camPos, camDir;
-
+            /*
             //Aparte camera invoer
             Console.WriteLine("Enter camera postition");
             for (int i = 0; i < 3; i++)
@@ -48,8 +48,10 @@ namespace template
                 cameraValues[i] = float.Parse(Console.ReadLine());
             }
             camDir = new Vector3(cameraValues[0], cameraValues[1], cameraValues[2]);
+            */
 
-
+            camPos = new Vector3(-10, 0, 1);
+            camDir = new Vector3(1, 0, 0);
 
             //view = float.Parse(Console.ReadLine());
             camera = new Camera(camPos, camDir, view);
@@ -80,8 +82,8 @@ namespace template
             s3.refractionIndex = 1.5f;
             scene.AddObject(s3);
 
-            Triangle t = new Triangle(new Vector3(0, 0, 1), new Vector3(1, 0, 0), new Vector2(0, 1), new Vector2(1, 1), new Vector2(0, 1), new Vector3(1f, 0, 0.5f));
-            //scene.AddObject(t);
+            Triangle t = new Triangle(new Vector3(-3, -1, 1), new Vector3(-4, 1, 0.5f), new Vector3(-3, 0, 2), new Vector3(1f, 0, 0.5f));
+            scene.AddObject(t);
         }
 
         public void Render()

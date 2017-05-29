@@ -171,13 +171,24 @@ namespace template
             throw new NotImplementedException();
         }
     }
+
+    
     class Triangle : Primitive
     {
         public Vector3 normal;
 
-        public Triangle(Vector3 position, Vector3 normal, Vector2 p1, Vector2 p2, Vector2 p3, Vector3 color) : base(position, color)
+        public Vector3 p2;
+        public Vector3 p3;
+
+        //Always define the points counter-clockwise!!!
+        public Triangle(Vector3 position, Vector3 p2, Vector3 p3, Vector3 color) : base(position, color)
         {
-            this.normal = normal;
+            this.p2 = p2;
+            this.p3 = p3;
+
+            Vector3 p1p2 = p2 - position;
+            Vector3 p1p3 = p3 - position;
+            this.normal = Vector3.Cross(p1p3, p1p2);
         }
 
         public override Intersection intersectPrimitive(Ray ray)
@@ -191,6 +202,42 @@ namespace template
 
             // wrong direction, return null
             if (t >= 0)
+                return null;
+
+            // now we know that we at least hit the plane in which the triangle is found,
+            // now to check whether the intersection point is within the triangle (normalized)
+
+            Vector3 p1p2 = (p2 - position).Normalized();
+            Vector3 p2p3 = (p3 - p2).Normalized();
+            Vector3 p3p1 = (position - p3).Normalized();
+
+            // the vectors from the triangle vertices to the intersection point iPoint (normalized too)
+            Vector3 p1i = (iPoint - position).Normalized();
+            Vector3 p2i = (iPoint - p2).Normalized();
+            Vector3 p3i = (iPoint - p3).Normalized();
+
+            // the angle at 'position'
+            float alpha = (float)Math.Acos(Vector3.Dot(p1p2, -p3p1));
+            // the angle at 'position' (between p1p2 and the iPoint)
+            float alpha2 = (float)Math.Acos(Vector3.Dot(p1p2, p1i));
+            // only if all angles are smaller than the "original" ones AND positive, we are within the triangle
+            if (alpha2 > alpha)
+                return null;
+
+            // the angle at p2
+            float beta = (float)Math.Acos(Vector3.Dot(-p1p2, p2p3));
+            // the angle at p2 (between p2p3 and the iPoint)
+            float beta2 = (float)Math.Acos(Vector3.Dot(p2p3, p2i));
+            // only if all angles are smaller than the "original" ones AND positive, we are within the triangle
+            if (beta2 > beta)
+                return null;
+
+            // the angle at p3
+            float gamma = (float)Math.Acos(Vector3.Dot(-p2p3, p3p1));
+            // the angle at p3 (between p3p1 and the iPoint)
+            float gamma2 = (float)Math.Acos(Vector3.Dot(p3p1, p3i));
+            // only if all angles are smaller than the "original" ones AND positive, we are within the triangle
+            if (gamma2 > gamma)
                 return null;
 
             Intersection i = new Intersection(ray, -t);
