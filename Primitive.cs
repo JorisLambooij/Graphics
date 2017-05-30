@@ -17,14 +17,16 @@ namespace template
 
         public float refractionIndex;
         public float transparency;
+        public float reflection;
 
-        public Primitive(Vector3 position, Vector3 color, float refractionIndex = 1, float transparency = 0)
+        public Primitive(Vector3 position, Vector3 color, float refractionIndex = 1, float transparency = 0, float reflection = 0)
         {
             this.position = position;
             this.color = color;
 
             this.refractionIndex = refractionIndex;
             this.transparency = transparency;
+            this.reflection = reflection;
 
 
         }

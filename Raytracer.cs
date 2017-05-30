@@ -100,6 +100,7 @@ namespace template
             Sphere s3 = new Sphere(new Vector3(-2.5f, 1, 1.2f), 1, new Vector3(1.0f, 1.0f, 1.0f));
             s3.transparency = 0.8f;
             s3.refractionIndex = 1.5f;
+            s3.reflection = 0.5f;
             scene.AddObject(s3);
 
             Triangle t = new Triangle(new Vector3(-3, -1, 1), new Vector3(-4, 1, 0.5f), new Vector3(-3, 0, 2), new Vector3(1f, 0, 0.5f));
@@ -198,6 +199,7 @@ namespace template
             ray.origin = ray.origin + Lambda * ray.direction;
             Intersection intersect = scene.intersectScene(ray);
 
+            
             // did not hit anything, return skydome
             if (intersect.collider == null)
             {
@@ -207,6 +209,11 @@ namespace template
                 ray.distanceTraveled = 1f;
                 return ray;
             }
+            else if(recursion > recursionCap)
+            {
+                return null;
+            }
+
             // TODO: check for materials
             // hitting something not transparent
             else if(intersect.collider.transparency == 0)
@@ -221,46 +228,87 @@ namespace template
                 return ray;
             }
             // hitting transparent object, going into recursion
+            else if (intersect.collider.reflection > 0)
+            {
+                float tvalue = 1 - intersect.collider.reflection;
+                float rvalue = intersect.collider.reflection;
+
+                Vector3 u;
+                Vector3 v;
+
+                u = intersect.normal * Vector3.Dot(intersect.normal, ray.direction);
+                v = ray.direction - u;
+
+                Vector3 newRayDirection = v - u;
+
+                if (recursion + 1 > recursionCap)
+                {
+                    ray.color = Vector3.Zero;
+                    return ray;
+
+                }
+                
+                Ray reflectRay = TraceRay(new Ray(intersect.intersectionPoint, newRayDirection), recursion + 1);
+                Ray transparentRay = refraction(intersect, ray, recursion + 1);
+
+                ray.color = rvalue * reflectRay.color + tvalue * transparentRay.color;
+                ray.distanceTraveled += reflectRay.distanceTraveled;
+
+                return ray;
+
+            }
             else if(recursion < recursionCap)
             {
                 //Vector3 newDirection = ray.direction;
 
-                Vector3 newDirection;
-                Vector3 newOrigin = intersect.intersectionPoint;
-                Ray newRay;
-                if (ray.refract == Ray.Refract.Outside)
-                {
-                    //newDirection = ray.direction;
-                    newDirection = Refraction(ray.direction, intersect.normal, 1, intersect.collider.refractionIndex);
-
-                    newRay = new Ray(newOrigin, newDirection);
-                    newRay.refract = Ray.Refract.Inside;
-                }
-                else
-                {
-                    newDirection = Refraction(ray.direction, intersect.normal, intersect.collider.refractionIndex, 1);
-
-                    newRay = new Ray(newOrigin, newDirection);
-                    newRay.refract = Ray.Refract.Outside;
-                }
-                newRay.distanceTraveled = ray.distanceTraveled + intersect.distance;
-
-                Ray returnRay = TraceRay(newRay, recursion + 1);
-                returnRay.color *= intersect.collider.transparency;
-
-                if (debugFrame)
-                {
-                    Intersection inter = scene.intersectScene(newRay);
-                    DebugRay(newRay, inter, CreateColor(returnRay.color));
-                }
-
-                return returnRay;
+                return refraction(intersect, ray, recursion);
             }
             else
                 return null;
         }
 
-        Vector3 Refraction(Vector3 d, Vector3 n, float n1, float n2)
+        Ray refraction(Intersection intersect, Ray ray, int recursion)
+        {
+            Vector3 newDirection;
+            Vector3 newOrigin = intersect.intersectionPoint;
+            Ray newRay;
+            if (ray.refract == Ray.Refract.Outside)
+            {
+                //newDirection = ray.direction;
+                newDirection = RefractionDirection(ray.direction, intersect.normal, 1, intersect.collider.refractionIndex);
+
+                newRay = new Ray(newOrigin, newDirection);
+                newRay.refract = Ray.Refract.Inside;
+            }
+            else
+            {
+                newDirection = RefractionDirection(ray.direction, intersect.normal, intersect.collider.refractionIndex, 1);
+
+                newRay = new Ray(newOrigin, newDirection);
+                newRay.refract = Ray.Refract.Outside;
+            }
+            newRay.distanceTraveled = ray.distanceTraveled + intersect.distance;
+
+
+            if (recursion + 1 > recursionCap)
+            {
+                ray.color = Vector3.Zero;
+                return ray;
+            }
+            Ray returnRay = TraceRay(newRay, recursion + 1);
+            returnRay.color *= intersect.collider.transparency;
+
+            if (debugFrame)
+            {
+                Intersection inter = scene.intersectScene(newRay);
+                DebugRay(newRay, inter, CreateColor(returnRay.color));
+            }
+
+            return returnRay;
+
+        }
+
+        Vector3 RefractionDirection(Vector3 d, Vector3 n, float n1, float n2)
         {
             Vector3 u1 = n * Vector3.Dot(n, d);
             Vector3 v1 = d - u1;
