@@ -61,20 +61,20 @@ namespace template
             Console.Write("Angle in degrees = ");
             angle = float.Parse(Console.ReadLine()) * (float)(Math.PI / 180);
 
-            //view = 0,5 van screenPlane / tan(angle / 2).
-            view = 1f / (float)Math.Tan(angle / 2f);
-            Console.WriteLine("view = " + view);
-            Console.WriteLine("Tan(angle / 2) = " + (float)Math.Tan(angle / 2f));
-            //Camera Positie aangepast aan de hand van de angle.
-            Console.WriteLine("camPos = " + camPos);
-            FOVCamPos = camPos + (-view * camDir);
-            Console.WriteLine("FOVCamPos = " + FOVCamPos);
-            camPos = FOVCamPos;
+            ////view = 0,5 van screenPlane / tan(angle / 2).
+            //view = 1f / (float)Math.Tan(angle / 2f);
+            //Console.WriteLine("view = " + view);
+            //Console.WriteLine("Tan(angle / 2) = " + (float)Math.Tan(angle / 2f));
+            ////Camera Positie aangepast aan de hand van de angle.
+            //Console.WriteLine("camPos = " + camPos);
+            //FOVCamPos = camPos + (-view * camDir);
+            //Console.WriteLine("FOVCamPos = " + FOVCamPos);
+            //camPos = FOVCamPos;
 
 
 
             //view = float.Parse(Console.ReadLine());
-            camera = new Camera(camPos, camDir, view);
+            camera = new Camera(camPos, camDir, angle);
 
 
             // initialize the scene with a few object (only one plane atm)
