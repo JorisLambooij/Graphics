@@ -23,13 +23,19 @@ namespace template
             screenPlane = new Vector2(2, 2);
         }
 
-        Vector3 screenUp
+        public Vector3 screenUp
         {
             get
             {
                 return new Vector3(0, 0, 1);
             }
         }
-
+        public Vector3 screenRight
+        {
+            get
+            {
+                return new Vector3(0, 1.0f, 0);
+            }
+        }
     }
 }

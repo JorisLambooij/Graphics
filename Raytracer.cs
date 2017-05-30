@@ -52,7 +52,7 @@ namespace template
             camDir = new Vector3(cameraValues[0], cameraValues[1], cameraValues[2]);
             */
 
-            camPos = new Vector3(-10, 0, 1);
+            camPos = new Vector3(-7, 0, 1);
             camDir = new Vector3(1, 0, 0);
 
 
@@ -80,11 +80,13 @@ namespace template
             // initialize the scene with a few object (only one plane atm)
             scene = new Scene();
             scene.AddLight(new Vector3(0, -5, 10f), 4000, new Vector3(1, 1, 1));
-            scene.AddLight(new Vector3(-5, 2, 1f), 3000, new Vector3(1, 1, 1));
+            scene.AddLight(new Vector3(-5, 2, 4f), 2000, new Vector3(1, 1, 1));
 
             scene.skydome = new Bitmap("textures/sky2.jpg");
 
-            Plane p = new Plane(new Vector3(0, 0, 0), new Vector3(0, 0, 1), new Vector3(1f, 0f, 0));
+            Plane p = new Plane(new Vector3(0, 0, 0), new Vector3(0, 0, 1), new Vector3(0.6f, 0.6f, 0.5f));
+            p.texture = new Bitmap("textures/floor_simple.jpg");
+            p.textureScale = 0.25f;
             scene.AddObject(p);
 
             Plane p2 = new Plane(new Vector3(40, 0, 0f), new Vector3(-1, 0, 0.2f), new Vector3(80, 80, 800));
@@ -116,10 +118,13 @@ namespace template
 
             for (int x = 0; x < width; x++)
             {
+                float screenRightPercent = 2.0f * (x - (width / 2)) / width;
+                float screenHalfPercent = 1f / width;
+
                 // before each y-column, we need to calculate the result for "y = -1"
                 Vector3 previousVector1, previousVector2;
-                previousVector1 = camera.direction + new Vector3(0, (x + 0.5f) * xSteps - 0.5f, 0.5f * ySteps + 0.5f);
-                previousVector2 = camera.direction + new Vector3(0, (x - 0.5f) * xSteps - 0.5f, 0.5f * ySteps + 0.5f);
+                previousVector1 = camera.direction + (screenRightPercent - screenHalfPercent) * camera.screenRight + (1 - screenHalfPercent) * camera.screenUp;
+                previousVector2 = camera.direction + (screenRightPercent + screenHalfPercent) * camera.screenRight + (1 - screenHalfPercent) * camera.screenUp;
 
                 Ray previousRay1, previousRay2;
                 previousRay1 = TraceRay(new Ray(camera.position, previousVector1.Normalized()), 0);
@@ -133,10 +138,15 @@ namespace template
                 previousColor1 = previousRay1.color * previousInverseSquare1;
                 previousColor2 = previousRay2.color * previousInverseSquare2;
 
+                previousColor1 = ClampColor(previousColor1);
+                previousColor2 = ClampColor(previousColor2);
+
                 for (int y = 0; y < screen.height; y++)
                 {
                     if (x % 16 == 0 && y == 256)
                         debugFrame = true;
+
+                    float screenUpPercent = 2.0f * (y - (screen.height / 2)) / screen.height;
 
                     /*
                     // without anti-alias:
@@ -151,12 +161,14 @@ namespace template
 
                     screen.pixels[x + y * screen.width] = CreateColor(color);
                     */
-                    
+
                     // with anti-alias: calculate the two "new" rays, then add the "previous" rays, and take the average color
+
                     Vector3 currentVector1, currentVector2;
 
-                    currentVector1 = camera.direction + new Vector3(0, (x + 0.5f) * xSteps - 0.5f, -(y + 0.5f) * ySteps + 0.5f);
-                    currentVector2 = camera.direction + new Vector3(0, (x - 0.5f) * xSteps - 0.5f, -(y + 0.5f) * ySteps + 0.5f);
+                    //currentVector1 = camera.direction + (screenRightPercent - screenHalfPercent) * camera.screenRight + new Vector3(0, 0, -(y + 0.5f) * ySteps + 0.5f);
+                    currentVector1 = camera.direction + (screenRightPercent - screenHalfPercent) * camera.screenRight - (screenUpPercent + screenHalfPercent) * camera.screenUp;
+                    currentVector2 = camera.direction + (screenRightPercent + screenHalfPercent) * camera.screenRight - (screenUpPercent + screenHalfPercent) * camera.screenUp;
 
                     Ray currentRay1, currentRay2;
 
@@ -170,7 +182,9 @@ namespace template
 
                     currentColor1 = currentRay1.color * currentInverseSquare1;
                     currentColor2 = currentRay2.color * currentInverseSquare2;
-
+                    
+                    currentColor1 = ClampColor(currentColor1);
+                    currentColor2 = ClampColor(currentColor2);
 
                     Vector3 color = (previousColor1 + previousColor2 + currentColor1 + currentColor2) * 0.25f;
 
@@ -192,6 +206,15 @@ namespace template
                 }
             }
             DebugView();
+        }
+
+        private Vector3 ClampColor(Vector3 color)
+        {
+            color.X = Math.Max(0, Math.Min(1, color.X));
+            color.Y = Math.Max(0, Math.Min(1, color.Y));
+            color.Z = Math.Max(0, Math.Min(1, color.Z));
+
+            return color;
         }
 
         public Ray TraceRay(Ray ray, int recursion)

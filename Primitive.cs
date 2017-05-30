@@ -142,9 +142,12 @@ namespace template
     {
         public Vector3 normal;
 
+        public float textureScale;
+
         public Plane(Vector3 position, Vector3 normal, Vector3 color) : base (position, color)
         {
             this.normal = normal;
+            textureScale = 1;
         }
 
         public override Intersection intersectPrimitive(Ray ray)
@@ -170,7 +173,40 @@ namespace template
 
         public override Vector3 colorFromTexture(Vector3 position)
         {
-            throw new NotImplementedException();
+            //throw new NotImplementedException();
+
+            Vector3 v = this.position - position;
+            float dot = Vector3.Dot(Vector3.UnitZ, normal);
+            if (dot != 0)
+            {
+                // not a vertical plane
+
+                Vector3 xVec = Vector3.Cross(Vector3.UnitY, normal);
+                Vector3 yVec = Vector3.Cross(normal, xVec);
+
+                float xLength = Vector3.Dot(v, xVec);
+                float yLength = Vector3.Dot(v, yVec);
+
+                int x = (int) (textureScale * texture.Width * xLength);
+                int y = (int) (textureScale * texture.Height * yLength);
+
+                while (x < 0)
+                    x += texture.Width;
+                while (y < 0)
+                    y += texture.Height;
+
+                x = x % texture.Width;
+                y = y % texture.Height;
+
+                Color color = texture.GetPixel(x, y);
+                float colorRatio = 1f / 255f;
+                return new Vector3(color.R * colorRatio, color.G * colorRatio, color.B * colorRatio);
+            }
+            else
+            {
+                // vertical plane
+                throw new Exception("Vertical plane not supported :(");
+            }
         }
     }
 
