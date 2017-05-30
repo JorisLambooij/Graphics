@@ -66,8 +66,8 @@ namespace template
                 {
                     float intersectdistanceSquared = (currIntersection.intersectionPoint - ray.origin).LengthSquared;
                     float lightDistanceSquared = (lightSource.position - ray.origin).LengthSquared;
-                    
-                    if (intersectdistanceSquared > 0 && intersectdistanceSquared < lightDistanceSquared)
+
+                    if (intersectdistanceSquared > RayTracer.Lambda && intersectdistanceSquared < lightDistanceSquared)
                     {
                         currTransparency *= currIntersection.collider.transparency;
                         if (currTransparency <= 0.1f)

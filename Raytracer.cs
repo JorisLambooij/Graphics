@@ -59,8 +59,8 @@ namespace template
 
             Console.WriteLine("Enter angle");
             Console.Write("Angle in degrees = ");
-            angle = float.Parse(Console.ReadLine()) * (float)(Math.PI / 180);
-
+            //angle = float.Parse(Console.ReadLine()) * (float)(Math.PI / 180);
+            angle = 90;
             //view = 0,5 van screenPlane / tan(angle / 2).
             view = 1f / (float)Math.Tan(angle / 2f);
             Console.WriteLine("view = " + view);
@@ -79,7 +79,7 @@ namespace template
 
             // initialize the scene with a few object (only one plane atm)
             scene = new Scene();
-            scene.AddLight(new Vector3(0, -5, 10f), 4000, new Vector3(1, 1, 1));
+            //scene.AddLight(new Vector3(0, -5, 10f), 4000, new Vector3(1, 1, 1));
             scene.AddLight(new Vector3(-5, 2, 4f), 2000, new Vector3(1, 1, 1));
 
             scene.skydome = new Bitmap("textures/sky2.jpg");
@@ -89,7 +89,9 @@ namespace template
             p.textureScale = 0.25f;
             scene.AddObject(p);
 
-            Plane p2 = new Plane(new Vector3(40, 0, 0f), new Vector3(-1, 0, 0.2f), new Vector3(80, 80, 800));
+            Plane p2 = new Plane(new Vector3(40, 0, 0f), new Vector3(-1, 0, 0f), new Vector3(1000, 1000, 1000));
+            p2.texture = new Bitmap("textures/floor_simple.jpg");
+            p2.textureScale = 0.05f;
             //scene.AddObject(p2);
 
             Sphere s1 = new Sphere(new Vector3(2, 3, 1), 2, new Vector3(1.0f, 0.1f, 1.0f));
@@ -99,14 +101,15 @@ namespace template
             s2.texture = new Bitmap("textures/earth.png");
             scene.AddObject(s2);
             
-            Sphere s3 = new Sphere(new Vector3(-2.5f, 1, 1.2f), 1, new Vector3(1.0f, 1.0f, 1.0f));
-            s3.transparency = 0.8f;
+            Sphere s3 = new Sphere(new Vector3(-3.0f, 1, 1.2f), 1.5f, new Vector3(1.0f, 1.0f, 1.0f));
+            s3.transparency = 0.5f;
             s3.refractionIndex = 1.5f;
             s3.reflection = 0.5f;
             scene.AddObject(s3);
 
-            Triangle t = new Triangle(new Vector3(-3, -1, 1), new Vector3(-4, 1, 0.5f), new Vector3(-3, 0, 2), new Vector3(1f, 0, 0.5f));
-            scene.AddObject(t);
+            Triangle t = new Triangle(new Vector3(-3, -1, 3), new Vector3(-4, 1, 3.5f), new Vector3(-3, 0, 3), new Vector3(1f, 0, 0.5f));
+            //scene.AddObject(t);
+            
         }
 
         public void Render()
@@ -137,10 +140,10 @@ namespace template
                 Vector3 previousColor1, previousColor2;
                 previousColor1 = previousRay1.color * previousInverseSquare1;
                 previousColor2 = previousRay2.color * previousInverseSquare2;
-
+                
                 previousColor1 = ClampColor(previousColor1);
                 previousColor2 = ClampColor(previousColor2);
-
+                
                 for (int y = 0; y < screen.height; y++)
                 {
                     if (x % 16 == 0 && y == 256)
@@ -175,8 +178,8 @@ namespace template
                     currentRay1 = TraceRay(new Ray(camera.position, currentVector1.Normalized()), 0);
                     currentRay2 = TraceRay(new Ray(camera.position, currentVector2.Normalized()), 0);
 
-                    float currentInverseSquare1 = 1 / (currentRay1.distanceTraveled * currentRay1.distanceTraveled);
-                    float currentInverseSquare2 = 1 / (currentRay2.distanceTraveled * currentRay2.distanceTraveled);
+                    float currentInverseSquare1 = Math.Min(1, 1 / (currentRay1.distanceTraveled * currentRay1.distanceTraveled));
+                    float currentInverseSquare2 = Math.Min(1, 1 / (currentRay2.distanceTraveled * currentRay2.distanceTraveled));
 
                     Vector3 currentColor1, currentColor2;
 
@@ -185,7 +188,7 @@ namespace template
                     
                     currentColor1 = ClampColor(currentColor1);
                     currentColor2 = ClampColor(currentColor2);
-
+                    
                     Vector3 color = (previousColor1 + previousColor2 + currentColor1 + currentColor2) * 0.25f;
 
                     screen.pixels[x + y * screen.width] = CreateColor(color);
@@ -195,12 +198,12 @@ namespace template
 
 
                     // keep for Debug (for now)
-                    Vector3 pixelDirection = camera.direction + new Vector3(0, (x * xSteps) - 0.5f, -(y * ySteps) + 0.5f);
-                    Ray debugRay = new Ray(camera.position, pixelDirection);
-                    Intersection intersect = scene.intersectScene(debugRay);
+                    //Vector3 pixelDirection = camera.direction + new Vector3(0, (x * xSteps) - 0.5f, -(y * ySteps) + 0.5f);
+                    //Ray debugRay = new Ray(camera.position, pixelDirection);
+                    //Intersection intersect = scene.intersectScene(debugRay);
                     if (debugFrame)
                     {
-                        DebugRay(debugRay, intersect, CreateColor(color));
+                        //DebugRay(debugRay, intersect, CreateColor(color));
                         debugFrame = false;
                     }
                 }
@@ -222,7 +225,6 @@ namespace template
             ray.origin = ray.origin + Lambda * ray.direction;
             Intersection intersect = scene.intersectScene(ray);
 
-            
             // did not hit anything, return skydome
             if (intersect.collider == null)
             {
@@ -239,18 +241,24 @@ namespace template
 
             // TODO: check for materials
             // hitting something not transparent
-            else if(intersect.collider.transparency == 0)
+            else if(intersect.collider.transparency == 0 && intersect.collider.reflection == 0)
             {
                 Vector3 color = DirectIllumination(intersect) * intersect.collider.color;
 
                 if (intersect.collider.texture != null)
                     color *= intersect.collider.colorFromTexture(intersect.intersectionPoint);
-
+                
                 ray.distanceTraveled += intersect.distance;
                 ray.color = color;
+
+
+                if (debugFrame)
+                    DebugRay(ray, intersect, CreateColor(color));
+                
+
                 return ray;
             }
-            // hitting transparent object, going into recursion
+            // hitting reflective object, going into recursion
             else if (intersect.collider.reflection > 0)
             {
                 float tvalue = 1 - intersect.collider.reflection;
@@ -268,14 +276,18 @@ namespace template
                 {
                     ray.color = Vector3.Zero;
                     return ray;
-
                 }
                 
                 Ray reflectRay = TraceRay(new Ray(intersect.intersectionPoint, newRayDirection), recursion + 1);
                 Ray transparentRay = refraction(intersect, ray, recursion + 1);
 
-                ray.color = rvalue * reflectRay.color + tvalue * transparentRay.color;
-                ray.distanceTraveled += reflectRay.distanceTraveled;
+                //reflectRay.distanceTraveled += ray.distanceTraveled;
+                ray.color = rvalue * reflectRay.color + intersect.collider.transparency * tvalue * transparentRay.color;
+                //ray.color *= 0.5f;
+                ray.distanceTraveled = reflectRay.distanceTraveled;
+
+                if (debugFrame)
+                    DebugRay(ray, intersect, CreateColor(ray.color));
 
                 return ray;
 
@@ -283,8 +295,12 @@ namespace template
             else if(recursion < recursionCap)
             {
                 //Vector3 newDirection = ray.direction;
+                Ray returnRay = refraction(intersect, ray, recursion);
 
-                return refraction(intersect, ray, recursion);
+                if (debugFrame)
+                    DebugRay(returnRay, intersect, CreateColor(returnRay.color));
+
+                return returnRay;
             }
             else
                 return null;
@@ -320,13 +336,7 @@ namespace template
             }
             Ray returnRay = TraceRay(newRay, recursion + 1);
             returnRay.color *= intersect.collider.transparency;
-
-            if (debugFrame)
-            {
-                Intersection inter = scene.intersectScene(newRay);
-                DebugRay(newRay, inter, CreateColor(returnRay.color));
-            }
-
+            
             return returnRay;
 
         }
@@ -359,14 +369,15 @@ namespace template
                 Vector3 lightD = (lightSource.position - intersect.intersectionPoint).Normalized();
                 float cos = Vector3.Dot(lightD, intersect.normal);
 
-                if (cos > 0)
+                if (cos >= 0)
                 {
                     Vector3 startPoint = intersect.intersectionPoint + Lambda * lightD;
                     Ray shadowRay = new Ray(startPoint, lightD);
                     
                     float d = 1 / (lightSource.position - shadowRay.origin).LengthSquared;
+                    float illumination = scene.intersectSceneShadow(shadowRay, lightSource);
                     
-                    Vector3 color = scene.intersectSceneShadow(shadowRay, lightSource) * (lightSource.color * lightSource.intensity * cos * d);
+                    Vector3 color = illumination * (lightSource.color * lightSource.intensity * cos * d);
                     
                     totalIllumination += color;
 
@@ -377,6 +388,7 @@ namespace template
                     }
                 }
             }
+            //return intersect.collider.color * 100;
             return totalIllumination;
         }
         

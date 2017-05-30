@@ -27,7 +27,7 @@ namespace template
         {
             get
             {
-                return new Vector3(0, 0, 1);
+                return new Vector3(0, 0, 1.0f);
             }
         }
         public Vector3 screenRight

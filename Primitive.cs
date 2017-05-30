@@ -146,7 +146,7 @@ namespace template
 
         public Plane(Vector3 position, Vector3 normal, Vector3 color) : base (position, color)
         {
-            this.normal = normal;
+            this.normal = normal.Normalized();
             textureScale = 1;
         }
 
@@ -165,7 +165,7 @@ namespace template
 
             Intersection i = new Intersection(ray, -t);
             
-            i.normal = this.normal;
+            i.normal = this.normal.Normalized();
             i.collider = this;
 
             return i;
@@ -174,8 +174,10 @@ namespace template
         public override Vector3 colorFromTexture(Vector3 position)
         {
             //throw new NotImplementedException();
-
+            int i = 0;
             Vector3 v = this.position - position;
+            if (this.position.Z != 0)
+                i = 0;
             float dot = Vector3.Dot(Vector3.UnitZ, normal);
             if (dot != 0)
             {
@@ -205,7 +207,29 @@ namespace template
             else
             {
                 // vertical plane
-                throw new Exception("Vertical plane not supported :(");
+                //throw new Exception("Vertical plane not supported :(");
+
+
+                Vector3 xVec = Vector3.Cross(Vector3.UnitZ, normal);
+                Vector3 yVec = Vector3.Cross(normal, xVec);
+
+                float xLength = Vector3.Dot(v, xVec);
+                float yLength = Vector3.Dot(v, yVec);
+
+                int x = (int)(textureScale * texture.Width * xLength);
+                int y = (int)(textureScale * texture.Height * yLength);
+
+                while (x < 0)
+                    x += texture.Width;
+                while (y < 0)
+                    y += texture.Height;
+
+                x = x % texture.Width;
+                y = y % texture.Height;
+
+                Color color = texture.GetPixel(x, y);
+                float colorRatio = 1f / 255f;
+                return new Vector3(color.R * colorRatio, color.G * colorRatio, color.B * colorRatio);
             }
         }
     }
@@ -237,11 +261,11 @@ namespace template
             float d = -Vector3.Dot(normal, position);
             float t = (Vector3.Dot(normal, ray.origin) + d) / Vector3.Dot(normal, ray.direction);
             iPoint = ray.origin + -t * ray.direction;
-
+            
             // wrong direction, return null
             if (t >= 0)
                 return null;
-
+            
             // now we know that we at least hit the plane in which the triangle is found,
             // now to check whether the intersection point is within the triangle (normalized)
 
@@ -253,7 +277,7 @@ namespace template
             Vector3 p1i = (iPoint - position).Normalized();
             Vector3 p2i = (iPoint - p2).Normalized();
             Vector3 p3i = (iPoint - p3).Normalized();
-
+            
             // the angle at 'position'
             float alpha = (float)Math.Acos(Vector3.Dot(p1p2, -p3p1));
             // the angle at 'position' (between p1p2 and the iPoint)
@@ -261,7 +285,7 @@ namespace template
             // only if all angles are smaller than the "original" ones AND positive, we are within the triangle
             if (alpha2 > alpha)
                 return null;
-
+                
             // the angle at p2
             float beta = (float)Math.Acos(Vector3.Dot(-p1p2, p2p3));
             // the angle at p2 (between p2p3 and the iPoint)
@@ -269,7 +293,7 @@ namespace template
             // only if all angles are smaller than the "original" ones AND positive, we are within the triangle
             if (beta2 > beta)
                 return null;
-
+                
             // the angle at p3
             float gamma = (float)Math.Acos(Vector3.Dot(-p2p3, p3p1));
             // the angle at p3 (between p3p1 and the iPoint)
@@ -277,7 +301,7 @@ namespace template
             // only if all angles are smaller than the "original" ones AND positive, we are within the triangle
             if (gamma2 > gamma)
                 return null;
-
+                
             Intersection i = new Intersection(ray, -t);
 
             i.normal = this.normal;
