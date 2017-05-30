@@ -23,7 +23,7 @@ namespace template
 			GL.Enable( EnableCap.Texture2D );
 			GL.Disable( EnableCap.DepthTest );
 			GL.Hint( HintTarget.PerspectiveCorrectionHint, HintMode.Nicest );
-			ClientSize = new Size( 1024, 512 );
+			ClientSize = new Size( 2500, 1250 );
 			game = new Game();
 			game.screen = new Surface( Width, Height );
 			Sprite.target = game.screen;

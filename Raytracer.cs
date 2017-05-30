@@ -28,7 +28,10 @@ namespace template
         public void Init(Surface screen)
         {
             this.screen = screen;
-            
+
+            this.xOffset = (int) (screen.width * 0.75f);
+            this.yOffset = (int)(screen.height * 0.4f);
+
             float angle = FOV * (float)(Math.PI / 180);
             camera = new Camera(cameraPosition, cameraDirection, angle);
             
@@ -39,8 +42,8 @@ namespace template
             scene.AddLight(new Vector3(-5, 2, 4f), 2000, new Vector3(0.2f, 1, 1));
             scene.skydome = new Bitmap("textures/sky2.jpg");
 
-            Plane p = new Plane(new Vector3(0, 0, 0), new Vector3(0, 0, 1), new Vector3(1.6f, 1.6f, 1.5f));
-            p.reflection = 0;
+            Plane p = new Plane(new Vector3(0, 0, 0), new Vector3(0, 0, 1), new Vector3(0.6f, 1.6f, 1.5f));
+            p.reflection = 0.8f;
             p.texture = new Bitmap("textures/floor_simple.jpg");
             p.textureScale = 0.25f;
             scene.AddObject(p);
@@ -101,7 +104,7 @@ namespace template
                 
                 for (int y = 0; y < screen.height; y++)
                 {
-                    if (x % 16 == 0 && y == 256)
+                    if (x % 32 == 0 && y == screen.height / 2)
                         debugFrame = true;
 
                     float screenUpPercent = 2.0f * (y - (screen.height / 2)) / screen.height;
@@ -259,12 +262,24 @@ namespace template
                 Ray reflectRay = TraceRay(new Ray(intersect.intersectionPoint, newRayDirection), recursion + 1);
                 Vector3 color = DirectIllumination(intersect) * intersect.collider.color;
 
-                if (intersect.collider.texture != null)
-                    color *= intersect.collider.colorFromTexture(intersect.intersectionPoint);
-
                 ray.distanceTraveled += intersect.distance;
 
-                ray.color = rvalue * reflectRay.color + nvalue * intersect.collider.color;
+                Vector3 texColor = Vector3.One;
+                if (intersect.collider.texture != null)
+                {
+                    texColor = intersect.collider.colorFromTexture(intersect.intersectionPoint);
+                    float r = 0.1f;
+                    texColor += new Vector3(r, r, r);
+                }
+
+                if (reflectRay.hitSkybox)
+                {
+                    nvalue *= 0.2f;
+                    rvalue *= 8;
+                }
+
+                ray.color = texColor * rvalue * reflectRay.color + nvalue * color * texColor;
+                
                 ray.distanceTraveled += reflectRay.distanceTraveled;
 
                 if (debugFrame)
@@ -416,12 +431,12 @@ namespace template
         {
             screen.Print("Camera", (int)(-camera.position.Y * scale + xOffset), (int) (camera.position.X * scale + yOffset), 0xFF0000);
 
-            screen.Line(767, 0, 767, 512, 0xffffff);
-            screen.Print("+x", 760, 10, 0xffffff);
-            screen.Print("-x", 760, 490, 0xffffff);
-            screen.Line(512, 256, 1023, 256, 0xffffff);
-            screen.Print("+y", 1000, 260, 0xffffff);
-            screen.Print("-y", 516, 260, 0xffffff);
+            screen.Line((int)(screen.width * 0.75f), 0, (int)(screen.width * 0.75f), screen.height - 1, 0xffffff);
+            screen.Print("+x", (int) (screen.width * 0.75f) + 5, 10, 0xffffff);
+            screen.Print("-x", (int) (screen.width * 0.75f) + 5, screen.height - 32, 0xffffff);
+            screen.Line(screen.width / 2, screen.height / 2, screen.width - 1, screen.height / 2, 0xffffff);
+            screen.Print("+y", screen.width - 32, screen.height / 2 + 5, 0xffffff);
+            screen.Print("-y", screen.width / 2 + 10, screen.height / 2 + 5, 0xffffff);
 
             foreach (Primitive p in scene.sceneObjects)
             {
