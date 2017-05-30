@@ -12,24 +12,30 @@ namespace template
         public Vector3 position;
         Vector3 direction;
         public Vector2 screenPlane;
+        public float aspectRatio = 1;
 
         Vector3 right, up;
 
-        public float screenPlaneSize, screenPlaneRange;
+        public float screenPlaneSize, xScreenPlaneRange, yScreenPlaneRange;
         float viewDistance, angle;
 
-        public Camera(Vector3 position, Vector3 direction, float angle)
+        public Camera(Vector3 position, Vector3 direction, float angle, float aspectRatio)
         {
             this.position = position;
             this.direction = direction;
             this.angle = angle;
+            this.aspectRatio = aspectRatio;
 
             //Constante afstand van camera tot screenPlane.
             viewDistance = 1f;
+
+            xScreenPlaneRange = (float)Math.Tan(angle / 2f) * viewDistance;
+            yScreenPlaneRange = xScreenPlaneRange / aspectRatio;
+            
             ScreenPlaneSize();
 
-            this.right = (Vector3.Cross(Vector3.UnitZ, direction)).Normalized() * screenPlaneRange;
-            this.up = (Vector3.Cross(direction, right)).Normalized() * screenPlaneRange;
+            this.right = (Vector3.Cross(Vector3.UnitZ, direction)).Normalized() * xScreenPlaneRange;
+            this.up = (Vector3.Cross(direction, right)).Normalized() * yScreenPlaneRange;
         }
 
         void ScreenPlaneSize()
@@ -37,10 +43,9 @@ namespace template
             //screenPlaneRange geeft aan hoe lang elke kant van een as is.
             //Bijvoorbeeld:
             //screenPlaneRange - 2 --> x-as gaat van -2 tot 2 en y-as gaat van -2 tot 2.
-            screenPlaneRange = (float)Math.Tan(angle / 2f) * viewDistance;
 
             //screenPlaneSize geeft aan hoe breed en hoog de screenPlane in totaal is.
-            screenPlaneSize = screenPlaneRange * 2f;
+            screenPlaneSize = xScreenPlaneRange * 2f;
 
             screenPlane = new Vector2(screenPlaneSize, screenPlaneSize);
 
@@ -59,8 +64,8 @@ namespace template
             set
             {
                 Vector3 normalized = value.Normalized();
-                right = (Vector3.Cross(Vector3.UnitZ, normalized)).Normalized() * screenPlaneRange;
-                up = (Vector3.Cross(normalized, right)).Normalized() * screenPlaneRange;
+                right = (Vector3.Cross(Vector3.UnitZ, normalized)).Normalized() * xScreenPlaneRange;
+                up = (Vector3.Cross(normalized, right)).Normalized() * yScreenPlaneRange;
                 direction = normalized;
             }
         }

@@ -32,9 +32,10 @@ namespace template
             this.xOffset = (int) (screen.width * 0.75f);
             this.yOffset = (int)(screen.height * 0.4f);
 
+
             float angle = FOV * (float)(Math.PI / 180);
-            camera = new Camera(cameraPosition, cameraDirection, angle);
-            
+            float aspectRatio = (float)screen.width / (2 * (float)screen.height);
+            camera = new Camera(cameraPosition, cameraDirection, angle, aspectRatio);
 
             // initialize the scene with a few object (only one plane atm)
             scene = new Scene();
