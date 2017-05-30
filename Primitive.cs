@@ -365,6 +365,7 @@ namespace template
         public Vector3 origin;
         public Vector3 direction;
 
+        public bool hitSkybox;
         public float distanceTraveled;
         public Vector3 color;
         
@@ -373,6 +374,7 @@ namespace template
             this.origin = origin;
             this.direction = direction;
 
+            hitSkybox = false;
             color = Vector3.Zero;
             distanceTraveled = 0;
 

@@ -27,8 +27,8 @@ namespace template
             float angle;
             
             Vector3 camPos, camDir;
-            camPos = new Vector3(-8, 0, 1);
-            camDir = new Vector3(1, 0, 0);
+            camPos = new Vector3(-6, -6, 1);
+            camDir = new Vector3(1, 1, 0);
             
             Console.WriteLine("Enter angle");
             Console.Write("Angle in degrees = ");
@@ -46,7 +46,8 @@ namespace template
 
             scene.skydome = new Bitmap("textures/sky2.jpg");
 
-            Plane p = new Plane(new Vector3(0, 0, 0), new Vector3(0, 0, 1), new Vector3(0.6f, 0.6f, 0.5f));
+            Plane p = new Plane(new Vector3(0, 0, 0), new Vector3(0, 0, 1), new Vector3(1.6f, 1.6f, 1.5f));
+            p.reflection = 0;
             p.texture = new Bitmap("textures/floor_simple.jpg");
             p.textureScale = 0.25f;
             scene.AddObject(p);
@@ -64,11 +65,11 @@ namespace template
             scene.AddObject(s2);
             
             Sphere s3 = new Sphere(new Vector3(-3.0f, 1, 1.2f), 1.5f, new Vector3(1.0f, 1.0f, 1.0f));
-            s3.transparency = 0.5f;
+            s3.transparency = 1f;
             s3.refractionIndex = 1.5f;
-            s3.reflection = 0.5f;
+            s3.reflection = 0.0f;
             scene.AddObject(s3);
-
+            
             Triangle t = new Triangle(new Vector3(-3, -1, 3), new Vector3(-4, 1, 3.5f), new Vector3(-3, 0, 3), new Vector3(1f, 0, 0.5f));
             //scene.AddObject(t);
         }
@@ -189,6 +190,7 @@ namespace template
             if (intersect.collider == null)
             {
                 ray.color = scene.SkydomeColor(ray.direction);
+                ray.hitSkybox = true;
                 // set distance to 1 to avoid distance attenuation (would be 1 / infinity = 0 = black otherwise
                 // TODO: make skydome HDR instead of setting the distance to 1
                 ray.distanceTraveled = 1f;
@@ -234,8 +236,11 @@ namespace template
                 ray.distanceTraveled += intersect.distance;
                 Ray transparentRay = refraction(intersect, ray, recursion + 1);
 
-                ray.color = nvalue * intersect.collider.color + tvalue * transparentRay.color;
+                if (transparentRay.hitSkybox)
+                    tvalue *= 36;
 
+                ray.color = nvalue * intersect.collider.color + tvalue * transparentRay.color;
+                
                 return ray;
             }
 
@@ -294,6 +299,9 @@ namespace template
                 Ray reflectRay = TraceRay(new Ray(intersect.intersectionPoint, newRayDirection), recursion + 1);
                 Ray transparentRay = refraction(intersect, ray, recursion + 1);
 
+                if (transparentRay.hitSkybox)
+                    tvalue *= 36;
+
                 //reflectRay.distanceTraveled += ray.distanceTraveled;
                 ray.color = rvalue * reflectRay.color + intersect.collider.transparency * tvalue * transparentRay.color;
                 //ray.color *= 0.5f;
@@ -304,17 +312,6 @@ namespace template
 
                 return ray;
             }
-            /*
-            if(recursion < recursionCap)
-            {
-                //Vector3 newDirection = ray.direction;
-                Ray returnRay = refraction(intersect, ray, recursion);
-
-                if (debugFrame)
-                    DebugRay(returnRay, intersect, CreateColor(returnRay.color));
-
-                return returnRay;
-            }*/
             else
                 return null;
         }

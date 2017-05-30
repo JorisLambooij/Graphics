@@ -10,10 +10,10 @@ namespace template
     class Camera
     {
         public Vector3 position;
-        public Vector3 direction;
+        Vector3 direction;
         public Vector2 screenPlane;
 
-        public Vector3 right, up;
+        Vector3 right, up;
 
         public float screenPlaneSize, screenPlaneRange;
         float viewDistance, angle;
@@ -61,6 +61,7 @@ namespace template
                 Vector3 normalized = value.Normalized();
                 right = (Vector3.Cross(Vector3.UnitZ, normalized)).Normalized() * screenPlaneRange;
                 up = (Vector3.Cross(normalized, right)).Normalized() * screenPlaneRange;
+                direction = normalized;
             }
         }
 
