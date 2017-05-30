@@ -23,58 +23,20 @@ namespace template
         public void Init(Surface screen)
         {
             this.screen = screen;
-            //// camera setup
-            //Vector3 camPos = new Vector3(-10, 0, 3);
-            //Vector3 camDir = new Vector3(1, 0, -0.2f);
-            //float view = 1;
-            float angle, view;
-            Vector3 FOVCamPos;
 
-            //x, y en z waardes opslaan.
-            float[] cameraValues = new float[3];
+            float angle;
+            
             Vector3 camPos, camDir;
-            /*
-            //Aparte camera invoer
-            Console.WriteLine("Enter camera postition");
-            for (int i = 0; i < 3; i++)
-            {
-                Console.Write(Convert.ToChar(i + 120) + " = ");
-                cameraValues[i] = float.Parse(Console.ReadLine());
-            }
-            camPos = new Vector3(cameraValues[0], cameraValues[1], cameraValues[2]);
-
-            Console.WriteLine("Enter camera direction");
-            for (int i = 0; i < 3; i++)
-            {
-                Console.Write(Convert.ToChar(i + 120) + " = ");
-                cameraValues[i] = float.Parse(Console.ReadLine());
-            }
-            camDir = new Vector3(cameraValues[0], cameraValues[1], cameraValues[2]);
-            */
-
             camPos = new Vector3(-7, 0, 1);
             camDir = new Vector3(1, 0, 0);
-
-
-
+            
             Console.WriteLine("Enter angle");
             Console.Write("Angle in degrees = ");
+            
+            angle = 90 * (float)(Math.PI / 180);
             //angle = float.Parse(Console.ReadLine()) * (float)(Math.PI / 180);
-            angle = 90;
-            //view = 0,5 van screenPlane / tan(angle / 2).
-            view = 1f / (float)Math.Tan(angle / 2f);
-            Console.WriteLine("view = " + view);
-            Console.WriteLine("Tan(angle / 2) = " + (float)Math.Tan(angle / 2f));
-            //Camera Positie aangepast aan de hand van de angle.
-            Console.WriteLine("camPos = " + camPos);
-            FOVCamPos = camPos + (-view * camDir);
-            Console.WriteLine("FOVCamPos = " + FOVCamPos);
-            camPos = FOVCamPos;
 
-
-
-            //view = float.Parse(Console.ReadLine());
-            camera = new Camera(camPos, camDir, view);
+            camera = new Camera(camPos, camDir, angle);
 
 
             // initialize the scene with a few object (only one plane atm)
@@ -109,7 +71,6 @@ namespace template
 
             Triangle t = new Triangle(new Vector3(-3, -1, 3), new Vector3(-4, 1, 3.5f), new Vector3(-3, 0, 3), new Vector3(1f, 0, 0.5f));
             //scene.AddObject(t);
-            
         }
 
         public void Render()
@@ -224,7 +185,7 @@ namespace template
         {
             ray.origin = ray.origin + Lambda * ray.direction;
             Intersection intersect = scene.intersectScene(ray);
-
+            
             // did not hit anything, return skydome
             if (intersect.collider == null)
             {
@@ -234,14 +195,10 @@ namespace template
                 ray.distanceTraveled = 1f;
                 return ray;
             }
-            else if(recursion > recursionCap)
-            {
-                return null;
-            }
 
             // TODO: check for materials
             // hitting something not transparent
-            else if(intersect.collider.transparency == 0 && intersect.collider.reflection == 0)
+            if (intersect.collider.transparency == 0 && intersect.collider.reflection == 0)
             {
                 Vector3 color = DirectIllumination(intersect) * intersect.collider.color;
 
@@ -259,7 +216,64 @@ namespace template
                 return ray;
             }
             // hitting reflective object, going into recursion
-            else if (intersect.collider.reflection > 0)
+            if (intersect.collider.transparency > 0 && intersect.collider.reflection == 0)
+            {
+                float tvalue = intersect.collider.transparency;
+                float nvalue = 1 - intersect.collider.transparency;
+
+                if (recursion + 1 > recursionCap)
+                {
+                    ray.color = Vector3.Zero;
+                    return ray;
+                }
+
+                Vector3 color = DirectIllumination(intersect) * intersect.collider.color;
+
+                if (intersect.collider.texture != null)
+                    color *= intersect.collider.colorFromTexture(intersect.intersectionPoint);
+
+                ray.distanceTraveled += intersect.distance;
+                Ray transparentRay = refraction(intersect, ray, recursion + 1);
+
+                ray.color = nvalue * intersect.collider.color + tvalue * transparentRay.color;
+
+                return ray;
+            }
+
+            if (intersect.collider.transparency == 0 && intersect.collider.reflection > 0)
+            {
+                float nvalue = 1 - intersect.collider.reflection;
+                float rvalue = intersect.collider.reflection;
+
+                Vector3 u;
+                Vector3 v;
+
+                u = intersect.normal * Vector3.Dot(intersect.normal, ray.direction);
+                v = ray.direction - u;
+
+                Vector3 newRayDirection = v - u;
+
+                if (recursion + 1 > recursionCap)
+                {
+                    ray.color = Vector3.Zero;
+                    return ray;
+                }
+
+                Ray reflectRay = TraceRay(new Ray(intersect.intersectionPoint, newRayDirection), recursion + 1);
+                Vector3 color = DirectIllumination(intersect) * intersect.collider.color;
+
+                if (intersect.collider.texture != null)
+                    color *= intersect.collider.colorFromTexture(intersect.intersectionPoint);
+
+                ray.distanceTraveled += intersect.distance;
+
+                ray.color = rvalue * reflectRay.color + nvalue * intersect.collider.color;
+                ray.distanceTraveled += reflectRay.distanceTraveled;
+
+                return ray;
+            }
+
+            if (intersect.collider.transparency > 0 && intersect.collider.reflection > 0)
             {
                 float tvalue = 1 - intersect.collider.reflection;
                 float rvalue = intersect.collider.reflection;
@@ -277,7 +291,7 @@ namespace template
                     ray.color = Vector3.Zero;
                     return ray;
                 }
-                
+
                 Ray reflectRay = TraceRay(new Ray(intersect.intersectionPoint, newRayDirection), recursion + 1);
                 Ray transparentRay = refraction(intersect, ray, recursion + 1);
 
@@ -290,9 +304,9 @@ namespace template
                     DebugRay(ray, intersect, CreateColor(ray.color));
 
                 return ray;
-
             }
-            else if(recursion < recursionCap)
+            /*
+            if(recursion < recursionCap)
             {
                 //Vector3 newDirection = ray.direction;
                 Ray returnRay = refraction(intersect, ray, recursion);
@@ -301,7 +315,7 @@ namespace template
                     DebugRay(returnRay, intersect, CreateColor(returnRay.color));
 
                 return returnRay;
-            }
+            }*/
             else
                 return null;
         }
