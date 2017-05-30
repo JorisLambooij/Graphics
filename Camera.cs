@@ -13,6 +13,8 @@ namespace template
         public Vector3 direction;
         public Vector2 screenPlane;
 
+        public Vector3 right, up;
+
         public float screenPlaneSize, screenPlaneRange;
         float viewDistance, angle;
 
@@ -25,6 +27,9 @@ namespace template
             //Constante afstand van camera tot screenPlane.
             viewDistance = 1f;
             ScreenPlaneSize();
+
+            this.right = (Vector3.Cross(Vector3.UnitZ, direction)).Normalized() * screenPlaneRange;
+            this.up = (Vector3.Cross(direction, right)).Normalized() * screenPlaneRange;
         }
 
         void ScreenPlaneSize()
@@ -45,18 +50,34 @@ namespace template
             Console.WriteLine("screenRight = " + screenRight);
         }
 
+        public Vector3 Direction
+        {
+            get
+            {
+                return direction;
+            }
+            set
+            {
+                Vector3 normalized = value.Normalized();
+                right = (Vector3.Cross(Vector3.UnitZ, normalized)).Normalized() * screenPlaneRange;
+                up = (Vector3.Cross(normalized, right)).Normalized() * screenPlaneRange;
+            }
+        }
+
         public Vector3 screenUp
         {
             get
             {
-                return new Vector3(0, 0, screenPlaneRange);
+                return up;
+                // return new Vector3(0, 0, screenPlaneRange);
             }
         }
         public Vector3 screenRight
         {
             get
             {
-                return new Vector3(0, screenPlaneRange, 0);
+                return right;
+                // return new Vector3(0, screenPlaneRange, 0);
             }
         }
     }

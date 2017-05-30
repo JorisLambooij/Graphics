@@ -27,7 +27,7 @@ namespace template
             float angle;
             
             Vector3 camPos, camDir;
-            camPos = new Vector3(-7, 0, 1);
+            camPos = new Vector3(-8, 0, 1);
             camDir = new Vector3(1, 0, 0);
             
             Console.WriteLine("Enter angle");
@@ -41,7 +41,7 @@ namespace template
 
             // initialize the scene with a few object (only one plane atm)
             scene = new Scene();
-            //scene.AddLight(new Vector3(0, -5, 10f), 4000, new Vector3(1, 1, 1));
+            scene.AddLight(new Vector3(0, -5, 10f), 4000, new Vector3(1, 1, 1));
             scene.AddLight(new Vector3(-5, 2, 4f), 2000, new Vector3(1, 1, 1));
 
             scene.skydome = new Bitmap("textures/sky2.jpg");
@@ -87,8 +87,8 @@ namespace template
 
                 // before each y-column, we need to calculate the result for "y = -1"
                 Vector3 previousVector1, previousVector2;
-                previousVector1 = camera.direction + (screenRightPercent - screenHalfPercent) * camera.screenRight + (1 - screenHalfPercent) * camera.screenUp;
-                previousVector2 = camera.direction + (screenRightPercent + screenHalfPercent) * camera.screenRight + (1 - screenHalfPercent) * camera.screenUp;
+                previousVector1 = camera.Direction + (screenRightPercent - screenHalfPercent) * camera.screenRight + (1 - screenHalfPercent) * camera.screenUp;
+                previousVector2 = camera.Direction + (screenRightPercent + screenHalfPercent) * camera.screenRight + (1 - screenHalfPercent) * camera.screenUp;
 
                 Ray previousRay1, previousRay2;
                 previousRay1 = TraceRay(new Ray(camera.position, previousVector1.Normalized()), 0);
@@ -129,10 +129,9 @@ namespace template
                     // with anti-alias: calculate the two "new" rays, then add the "previous" rays, and take the average color
 
                     Vector3 currentVector1, currentVector2;
-
-                    //currentVector1 = camera.direction + (screenRightPercent - screenHalfPercent) * camera.screenRight + new Vector3(0, 0, -(y + 0.5f) * ySteps + 0.5f);
-                    currentVector1 = camera.direction + (screenRightPercent - screenHalfPercent) * camera.screenRight - (screenUpPercent + screenHalfPercent) * camera.screenUp;
-                    currentVector2 = camera.direction + (screenRightPercent + screenHalfPercent) * camera.screenRight - (screenUpPercent + screenHalfPercent) * camera.screenUp;
+                    
+                    currentVector1 = camera.Direction + (screenRightPercent - screenHalfPercent) * camera.screenRight - (screenUpPercent + screenHalfPercent) * camera.screenUp;
+                    currentVector2 = camera.Direction + (screenRightPercent + screenHalfPercent) * camera.screenRight - (screenUpPercent + screenHalfPercent) * camera.screenUp;
 
                     Ray currentRay1, currentRay2;
 

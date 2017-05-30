@@ -26,7 +26,8 @@ namespace template
 
         public bool KeyDown(Key key)
         {
-            return !previousState[key] && currentState[key];
+            return currentState[key];
+            //return !previousState[key] && currentState[key];
         }
     }
 }

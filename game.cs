@@ -43,14 +43,27 @@ namespace template {
                 ((Sphere)rayTracer.scene.sceneObjects[3]).phiOffset -= 0.5f * angularSteps;
             }
 
+            // forward / backward
             if (input.KeyDown(Key.W))
-            {
                 rayTracer.camera.position.X++;
-            }
+            
             else if (input.KeyDown(Key.S))
-            {
                 rayTracer.camera.position.X--;
-            }
+            
+            // strafe left / right
+            if (input.KeyDown(Key.A))
+                rayTracer.camera.position.Y--;
+            
+            else if (input.KeyDown(Key.D))
+                rayTracer.camera.position.Y++;
+            
+            // turn left / right
+            if (input.KeyDown(Key.Q))
+                rayTracer.camera.Direction -= Vector3.UnitY * 0.25f;
+        
+            else if (input.KeyDown(Key.E))
+                rayTracer.camera.Direction += Vector3.UnitY * 0.25f;
+        
         }
     }
 
