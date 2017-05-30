@@ -199,7 +199,7 @@ namespace template
             ray.origin = ray.origin + Lambda * ray.direction;
             Intersection intersect = scene.intersectScene(ray);
 
-            
+
             // did not hit anything, return skydome
             if (intersect.collider == null)
             {
@@ -209,14 +209,10 @@ namespace template
                 ray.distanceTraveled = 1f;
                 return ray;
             }
-            else if(recursion > recursionCap)
-            {
-                return null;
-            }
 
             // TODO: check for materials
             // hitting something not transparent
-            else if(intersect.collider.transparency == 0)
+            if (intersect.collider.transparency == 0 && intersect.collider.reflection == 0)
             {
                 Vector3 color = DirectIllumination(intersect) * intersect.collider.color;
 
@@ -227,8 +223,62 @@ namespace template
                 ray.color = color;
                 return ray;
             }
-            // hitting transparent object, going into recursion
-            else if (intersect.collider.reflection > 0)
+            if (intersect.collider.transparency > 0 && intersect.collider.reflection == 0)
+            {
+                float tvalue = intersect.collider.transparency;
+                float nvalue = 1 - intersect.collider.transparency;
+
+                if (recursion + 1 > recursionCap)
+                {
+                    ray.color = Vector3.Zero;
+                    return ray;
+                }
+
+                Vector3 color = DirectIllumination(intersect) * intersect.collider.color;
+
+                if (intersect.collider.texture != null)
+                    color *= intersect.collider.colorFromTexture(intersect.intersectionPoint);
+
+                ray.distanceTraveled += intersect.distance;
+                Ray transparentRay = refraction(intersect, ray, recursion + 1);
+
+                ray.color = nvalue * intersect.collider.color + tvalue * transparentRay.color;
+
+                return ray;
+            }
+            if (intersect.collider.transparency == 0 && intersect.collider.reflection > 0)
+            {
+                float nvalue = 1 - intersect.collider.reflection;
+                float rvalue = intersect.collider.reflection;
+
+                Vector3 u;
+                Vector3 v;
+
+                u = intersect.normal * Vector3.Dot(intersect.normal, ray.direction);
+                v = ray.direction - u;
+
+                Vector3 newRayDirection = v - u;
+
+                if (recursion + 1 > recursionCap)
+                {
+                    ray.color = Vector3.Zero;
+                    return ray;
+                }
+
+                Ray reflectRay = TraceRay(new Ray(intersect.intersectionPoint, newRayDirection), recursion + 1);
+                Vector3 color = DirectIllumination(intersect) * intersect.collider.color;
+
+                if (intersect.collider.texture != null)
+                    color *= intersect.collider.colorFromTexture(intersect.intersectionPoint);
+
+                ray.distanceTraveled += intersect.distance;
+
+                ray.color = rvalue * reflectRay.color + nvalue * intersect.collider.color;
+                ray.distanceTraveled += reflectRay.distanceTraveled;
+
+                return ray;
+            }
+            if (intersect.collider.transparency > 0 && intersect.collider.reflection > 0)
             {
                 float tvalue = 1 - intersect.collider.reflection;
                 float rvalue = intersect.collider.reflection;
@@ -245,9 +295,8 @@ namespace template
                 {
                     ray.color = Vector3.Zero;
                     return ray;
-
                 }
-                
+
                 Ray reflectRay = TraceRay(new Ray(intersect.intersectionPoint, newRayDirection), recursion + 1);
                 Ray transparentRay = refraction(intersect, ray, recursion + 1);
 
@@ -255,9 +304,8 @@ namespace template
                 ray.distanceTraveled += reflectRay.distanceTraveled;
 
                 return ray;
-
             }
-            else if(recursion < recursionCap)
+            if(recursion < recursionCap)
             {
                 //Vector3 newDirection = ray.direction;
 
