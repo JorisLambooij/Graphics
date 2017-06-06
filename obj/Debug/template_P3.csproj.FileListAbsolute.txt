@@ -1,0 +1,7 @@
+C:\Users\Joris\Documents\_Study\Graphics\bin\Debug\template_P3.exe.config
+C:\Users\Joris\Documents\_Study\Graphics\bin\Debug\template_P3.exe
+C:\Users\Joris\Documents\_Study\Graphics\bin\Debug\template_P3.pdb
+C:\Users\Joris\Documents\_Study\Graphics\bin\Debug\OpenTK.dll
+C:\Users\Joris\Documents\_Study\Graphics\obj\Debug\template_P3.csprojResolveAssemblyReference.cache
+C:\Users\Joris\Documents\_Study\Graphics\obj\Debug\template_P3.exe
+C:\Users\Joris\Documents\_Study\Graphics\obj\Debug\template_P3.pdb
