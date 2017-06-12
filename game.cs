@@ -23,21 +23,35 @@ namespace Template_P3 {
 	    ScreenQuad quad;						// screen filling quad for post processing
 	    bool useRenderTarget = true;
 
-	    // initialize
-	    public void Init()
+        Vector4 lightPosition_1 = new Vector4(10, 10, 0, 1);
+        Vector4 ambient_Color_1 = new Vector4(0.1f, 0.1f, 0.1f, 1);
+        Vector4 diffuse_Color_1 = new Vector4(1, 1, 1, 1);
+        Vector4 speculr_Color_1 = new Vector4(0.2f, 0.2f, 0.2f, 1);
+
+        Vector4[] lightData;
+
+
+        // initialize
+        public void Init()
 	    {
 		    // load teapot
 		    mesh = new Mesh( "../../assets/teapot.obj" );
 		    floor = new Mesh( "../../assets/floor.obj" );
+
 		    // initialize stopwatch
 		    timer = new Stopwatch();
 		    timer.Reset();
 		    timer.Start();
-		    // create shaders
-		    shader = new Shader( "../../shaders/vs.glsl", "../../shaders/fs.glsl" );
-		    postproc = new Shader( "../../shaders/vs_post.glsl", "../../shaders/fs_post.glsl" );
+
+            LightArray();
+
+            // create shaders
+            shader = new Shader( "../../shaders/vs.glsl", "../../shaders/fs.glsl" );
+            postproc = new Shader( "../../shaders/vs_post.glsl", "../../shaders/fs_post.glsl" );
+
 		    // load a texture
 		    wood = new Texture( "../../assets/wood.jpg" );
+
 		    // create the render target
 		    target = new RenderTarget( screen.width, screen.height );
 		    quad = new ScreenQuad();
@@ -50,8 +64,18 @@ namespace Template_P3 {
 		    screen.Print( "hello world", 2, 2, 0xffff00 );
 	    }
 
-	    // tick for OpenGL rendering code
-	    public void RenderGL()
+        private void LightArray()
+        {
+            // set up light data array
+            lightData = new Vector4[1 * 4];
+            lightData[0] = lightPosition_1;
+            lightData[1] = ambient_Color_1;
+            lightData[2] = diffuse_Color_1;
+            lightData[3] = speculr_Color_1;
+        }
+
+        // tick for OpenGL rendering code
+        public void RenderGL()
 	    {
 		    // measure frame duration
 		    float frameDuration = timer.ElapsedMilliseconds;
@@ -74,8 +98,8 @@ namespace Template_P3 {
 			    target.Bind();
 
 			    // render scene to render target
-			    mesh.Render( shader, transform, worldTransfrom, wood );
-			    floor.Render( shader, transform, worldTransfrom, wood);
+			    mesh.Render( shader, transform, worldTransfrom, wood, lightData);
+			    floor.Render( shader, transform, worldTransfrom, wood, lightData);
 
 			    // render quad
 			    target.Unbind();
@@ -84,8 +108,8 @@ namespace Template_P3 {
 		    else
 		    {
 			    // render scene directly to the screen
-			    mesh.Render( shader, transform, worldTransfrom, wood);
-			    floor.Render( shader, transform, worldTransfrom, wood);
+			    mesh.Render( shader, transform, worldTransfrom, wood, lightData);
+			    floor.Render( shader, transform, worldTransfrom, wood, lightData);
 		    }
 	    }
     }

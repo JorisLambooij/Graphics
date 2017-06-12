@@ -46,7 +46,7 @@ namespace Template_P3 {
 	    }
 
 	    // render the mesh using the supplied shader and matrix
-	    public void Render( Shader shader, Matrix4 transform, Matrix4 worldTransform, Texture texture )
+	    public void Render( Shader shader, Matrix4 transform, Matrix4 worldTransform, Texture texture , Vector4[] lightData)
 	    {
 		    // on first run, prepare buffers
 		    Prepare( shader );
@@ -56,9 +56,29 @@ namespace Template_P3 {
 		    GL.Uniform1( texLoc, 0 );
 		    GL.ActiveTexture( TextureUnit.Texture0 );
 		    GL.BindTexture( TextureTarget.Texture2D, texture.id );
+            
+            // enable shader
+            GL.UseProgram( shader.programID );
 
-		    // enable shader
-		    GL.UseProgram( shader.programID );
+            Vector4 lightPosition_1 = lightData[0];
+            Vector4 ambient_Color_1 = lightData[1];
+            Vector4 diffuse_Color_1 = lightData[2];
+            Vector4 speculr_Color_1 = lightData[3];
+
+            // pass lightPos
+            int light = GL.GetUniformLocation(shader.programID, "lightPos1");
+            GL.Uniform4(light, lightPosition_1);
+
+            // pass light colors
+            int ambient = GL.GetUniformLocation(shader.programID, "ambient_Color_L1");
+            GL.Uniform4(ambient, ambient_Color_1);
+
+            int diffuse = GL.GetUniformLocation(shader.programID, "diffuse_Color_L1");
+            GL.Uniform4(diffuse, diffuse_Color_1);
+
+            int specular = GL.GetUniformLocation(shader.programID, "speculr_Color_L1");
+            GL.Uniform4(specular, speculr_Color_1);
+            
 
             // pass view transform to vertex shader
             GL.UniformMatrix4(shader.uniform_mview, false, ref transform);
