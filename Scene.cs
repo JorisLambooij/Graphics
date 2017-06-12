@@ -54,7 +54,7 @@ namespace template
             float colorRatio = 1f / 255f;
             return new Vector3(color.R * colorRatio, color.G * colorRatio, color.B * colorRatio);
         }
-
+        // cast a shadow ray through the scene, look if there is an intersection
         public float intersectSceneShadow(Ray ray, Light lightSource)
         {
             float currTransparency = 1;
@@ -69,6 +69,8 @@ namespace template
 
                     if (intersectdistanceSquared > RayTracer.Lambda && intersectdistanceSquared < lightDistanceSquared)
                     {
+                        // if we encounter a transparent object, don't stop immediately
+                        // instead, reduce the instensity, and if there is enough left, continue
                         currTransparency *= currIntersection.collider.transparency;
                         if (currTransparency <= 0.1f)
                             return 0;

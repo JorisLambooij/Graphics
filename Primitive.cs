@@ -101,6 +101,7 @@ namespace template
             return i;
         }
         
+        // calculates the color of the pixel of the primitive on point 'position' 
         public override Vector3 colorFromTexture(Vector3 position)
         {
             if (this.texture == null)
@@ -171,66 +172,43 @@ namespace template
             return i;
         }
 
+        // calculates the color of the pixel of the primitive on point 'position' 
         public override Vector3 colorFromTexture(Vector3 position)
         {
-            //throw new NotImplementedException();
-            int i = 0;
             Vector3 v = this.position - position;
-            if (this.position.Z != 0)
-                i = 0;
             float dot = Vector3.Dot(Vector3.UnitZ, normal);
+
+            Vector3 xVec, yVec;
             if (dot != 0)
             {
                 // not a vertical plane
-
-                Vector3 xVec = Vector3.Cross(Vector3.UnitY, normal);
-                Vector3 yVec = Vector3.Cross(normal, xVec);
-
-                float xLength = Vector3.Dot(v, xVec);
-                float yLength = Vector3.Dot(v, yVec);
-
-                int x = (int) (textureScale * texture.Width * xLength);
-                int y = (int) (textureScale * texture.Height * yLength);
-
-                while (x < 0)
-                    x += texture.Width;
-                while (y < 0)
-                    y += texture.Height;
-
-                x = x % texture.Width;
-                y = y % texture.Height;
-
-                Color color = texture.GetPixel(x, y);
-                float colorRatio = 1f / 255f;
-                return new Vector3(color.R * colorRatio, color.G * colorRatio, color.B * colorRatio);
+                xVec = Vector3.Cross(Vector3.UnitY, normal);
+                yVec = Vector3.Cross(normal, xVec);
             }
             else
             {
                 // vertical plane
-                //throw new Exception("Vertical plane not supported :(");
-
-
-                Vector3 xVec = Vector3.Cross(Vector3.UnitZ, normal);
-                Vector3 yVec = Vector3.Cross(normal, xVec);
-
-                float xLength = Vector3.Dot(v, xVec);
-                float yLength = Vector3.Dot(v, yVec);
-
-                int x = (int)(textureScale * texture.Width * xLength);
-                int y = (int)(textureScale * texture.Height * yLength);
-
-                while (x < 0)
-                    x += texture.Width;
-                while (y < 0)
-                    y += texture.Height;
-
-                x = x % texture.Width;
-                y = y % texture.Height;
-
-                Color color = texture.GetPixel(x, y);
-                float colorRatio = 1f / 255f;
-                return new Vector3(color.R * colorRatio, color.G * colorRatio, color.B * colorRatio);
+                xVec = Vector3.Cross(Vector3.UnitZ, normal);
+                yVec = Vector3.Cross(normal, xVec);
             }
+            float xLength = Vector3.Dot(v, xVec);
+            float yLength = Vector3.Dot(v, yVec);
+
+            int x = (int)(textureScale * texture.Width * xLength);
+            int y = (int)(textureScale * texture.Height * yLength);
+
+            while (x < 0)
+                x += texture.Width;
+            while (y < 0)
+                y += texture.Height;
+
+            x = x % texture.Width;
+            y = y % texture.Height;
+
+            Color color = texture.GetPixel(x, y);
+            float colorRatio = 1f / 255f;
+            return new Vector3(color.R * colorRatio, color.G * colorRatio, color.B * colorRatio);
+
         }
     }
 

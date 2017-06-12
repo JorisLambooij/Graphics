@@ -22,7 +22,6 @@ namespace template
         public Camera(Vector3 position, Vector3 direction, float angle, float aspectRatio)
         {
             this.position = position;
-            this.direction = direction;
             this.angle = angle;
             this.aspectRatio = aspectRatio;
 
@@ -31,11 +30,13 @@ namespace template
 
             xScreenPlaneRange = (float)Math.Tan(angle / 2f) * viewDistance;
             yScreenPlaneRange = xScreenPlaneRange / aspectRatio;
-            
-            ScreenPlaneSize();
 
-            this.right = (Vector3.Cross(Vector3.UnitZ, direction)).Normalized() * xScreenPlaneRange;
-            this.up = (Vector3.Cross(direction, right)).Normalized() * yScreenPlaneRange;
+            Direction = direction;
+
+            //ScreenPlaneSize();
+
+            //this.right = (Vector3.Cross(Vector3.UnitZ, direction)).Normalized() * xScreenPlaneRange;
+            //this.up = (Vector3.Cross(direction, right)).Normalized() * yScreenPlaneRange;
         }
 
         void ScreenPlaneSize()
@@ -53,6 +54,7 @@ namespace template
             Console.WriteLine("screenPlane = " + screenPlane);
             Console.WriteLine("screenUp = " + screenUp);
             Console.WriteLine("screenRight = " + screenRight);
+
         }
 
         public Vector3 Direction
@@ -64,9 +66,19 @@ namespace template
             set
             {
                 Vector3 normalized = value.Normalized();
-                right = (Vector3.Cross(Vector3.UnitZ, normalized)).Normalized() * xScreenPlaneRange;
-                up = (Vector3.Cross(normalized, right)).Normalized() * yScreenPlaneRange;
-                direction = normalized;
+                if(normalized.X == 0 && normalized.Y == 0 && (normalized.Z == 1 || normalized.Z == -1))
+                {
+                    if (normalized.Z == 1)
+                        Direction = new Vector3(0.1f, 0, 1);
+                    else
+                        Direction = new Vector3(0.1f, 0, -1);
+                }
+                else
+                {
+                    right = (Vector3.Cross(Vector3.UnitZ, normalized)).Normalized() * xScreenPlaneRange;
+                    up = (Vector3.Cross(normalized, right)).Normalized() * yScreenPlaneRange;
+                    direction = normalized;
+                }
             }
         }
 

@@ -9,7 +9,7 @@ namespace template
 {
     class RayTracer
     {
-        public static float Lambda = 0.02f;
+        public static float Lambda = 0.002f;
 
         public Camera camera;
         public Scene scene;
@@ -17,10 +17,11 @@ namespace template
         public bool debugFrame;
 
         // adjustable stuff
-        public int recursionCap = 5;
+        public int recursionCap = 6;
         public int FOV = 90;
-        public Vector3 cameraPosition = new Vector3(-6, -6, 1);
-        public Vector3 cameraDirection = new Vector3(1, 1, 0);
+        public Vector3 cameraPosition = new Vector3(-7, -3, 1);
+        public Vector3 cameraDirection = new Vector3(3.0f, 1.0f, 0.0f);
+        public int debugInterval = 128;
 
         Surface screen;
 
@@ -28,11 +29,10 @@ namespace template
         public void Init(Surface screen)
         {
             this.screen = screen;
-
+            
             this.xOffset = (int) (screen.width * 0.75f);
             this.yOffset = (int)(screen.height * 0.4f);
-
-
+            
             float angle = FOV * (float)(Math.PI / 180);
             float aspectRatio = (float)screen.width / (2 * (float)screen.height);
             camera = new Camera(cameraPosition, cameraDirection, angle, aspectRatio);
@@ -57,14 +57,14 @@ namespace template
             Sphere s1 = new Sphere(new Vector3(2, 3, 1), 2, new Vector3(1.0f, 0.1f, 1.0f));
             scene.AddObject(s1);
 
-            Sphere s2 = new Sphere(new Vector3(2, -2, 3), 3, new Vector3(1.2f, 1.2f, 1.2f));
+            Sphere s2 = new Sphere(new Vector3(2, -2, 3), 3, new Vector3(1.3f, 1.3f, 1.3f));
             s2.texture = new Bitmap("textures/earth.png");
             scene.AddObject(s2);
             
-            Sphere s3 = new Sphere(new Vector3(-3.0f, 1, 1.2f), 1.5f, new Vector3(1.0f, 1.0f, 1.0f));
+            Sphere s3 = new Sphere(new Vector3(-3.0f, 1, 1.3f), 1.5f, new Vector3(1.0f, 1.0f, 1.0f));
             s3.transparency = 0.8f;
-            s3.refractionIndex = 1.5f;
-            s3.reflection = 0.0f;
+            s3.refractionIndex = 2.5f;
+            s3.reflection = 0.2f;
             scene.AddObject(s3);
             
             Triangle t = new Triangle(new Vector3(-3, -1, 3), new Vector3(-4, 1, 3.5f), new Vector3(-3, 0, 3), new Vector3(1f, 0, 0.5f));
@@ -80,13 +80,16 @@ namespace template
 
             for (int x = 0; x < width; x++)
             {
+                // how much of the camera.screenRight vector do we need?
+                // and how much is 0.5 steps in each direction?
                 float screenRightPercent = 2.0f * (x - (width / 2)) / width;
-                float screenHalfPercent = 1f / width;
+                float screenRightHalfPercent = 1f / width;
+                float screenUpHalfPercent = 1f / screen.height;
 
-                // before each y-column, we need to calculate the result for "y = -1"
+                // before each x-column, we need to calculate the result for "y = -1"
                 Vector3 previousVector1, previousVector2;
-                previousVector1 = camera.Direction + (screenRightPercent - screenHalfPercent) * camera.screenRight + (1 - screenHalfPercent) * camera.screenUp;
-                previousVector2 = camera.Direction + (screenRightPercent + screenHalfPercent) * camera.screenRight + (1 - screenHalfPercent) * camera.screenUp;
+                previousVector1 = camera.Direction + (screenRightPercent - screenRightHalfPercent) * camera.screenRight + (1 - screenUpHalfPercent) * camera.screenUp;
+                previousVector2 = camera.Direction + (screenRightPercent + screenRightHalfPercent) * camera.screenRight + (1 - screenUpHalfPercent) * camera.screenUp;
 
                 Ray previousRay1, previousRay2;
                 previousRay1 = TraceRay(new Ray(camera.position, previousVector1.Normalized()), 0);
@@ -96,6 +99,7 @@ namespace template
                 previousInverseSquare1 = 1 / (previousRay1.distanceTraveled * previousRay1.distanceTraveled);
                 previousInverseSquare2 = 1 / (previousRay2.distanceTraveled * previousRay2.distanceTraveled);
 
+                // these are the results for the upper two corners of the first pixel in the current column
                 Vector3 previousColor1, previousColor2;
                 previousColor1 = previousRay1.color * previousInverseSquare1;
                 previousColor2 = previousRay2.color * previousInverseSquare2;
@@ -105,65 +109,47 @@ namespace template
                 
                 for (int y = 0; y < screen.height; y++)
                 {
-                    if (x % 32 == 0 && y == screen.height / 2)
+                    // debug stuff
+                    if (x % debugInterval == 0 && y == screen.height / 2)
                         debugFrame = true;
 
+                    // how much of the camera.screenUp vector do we need?
                     float screenUpPercent = 2.0f * (y - (screen.height / 2)) / screen.height;
-
-                    /*
-                    // without anti-alias:
-                    // for each pixel, cast a ray
-                    // for now, use static camera, so the 2nd vector is simply calculated with x and y
-                    Vector3 pixelDirection = camera.direction + new Vector3(0, (x * xSteps) - 0.5f, -(y * ySteps) + 0.5f);
-                    Ray ray = new Ray(camera.position, pixelDirection.Normalized());
-
-                    Ray tRay = TraceRay(ray, 0);
-                    float inverseSquare = 1 / (tRay.distanceTraveled * tRay.distanceTraveled);
-                    Vector3 color = tRay.color * inverseSquare;
-
-                    screen.pixels[x + y * screen.width] = CreateColor(color);
-                    */
-
-                    // with anti-alias: calculate the two "new" rays, then add the "previous" rays, and take the average color
-
-                    Vector3 currentVector1, currentVector2;
                     
-                    currentVector1 = camera.Direction + (screenRightPercent - screenHalfPercent) * camera.screenRight - (screenUpPercent + screenHalfPercent) * camera.screenUp;
-                    currentVector2 = camera.Direction + (screenRightPercent + screenHalfPercent) * camera.screenRight - (screenUpPercent + screenHalfPercent) * camera.screenUp;
+                    // anti-alias: calculate the two "new" rays, then add the "previous" rays, and take the average color
+                    
+                    // the two new rays
+                    Vector3 currentVector1, currentVector2;
+                    currentVector1 = camera.Direction + (screenRightPercent - screenRightHalfPercent) * camera.screenRight - (screenUpPercent + screenUpHalfPercent) * camera.screenUp;
+                    currentVector2 = camera.Direction + (screenRightPercent + screenRightHalfPercent) * camera.screenRight - (screenUpPercent + screenUpHalfPercent) * camera.screenUp;
 
                     Ray currentRay1, currentRay2;
-
                     currentRay1 = TraceRay(new Ray(camera.position, currentVector1.Normalized()), 0);
                     currentRay2 = TraceRay(new Ray(camera.position, currentVector2.Normalized()), 0);
 
                     float currentInverseSquare1 = Math.Min(1, 1 / (currentRay1.distanceTraveled * currentRay1.distanceTraveled));
                     float currentInverseSquare2 = Math.Min(1, 1 / (currentRay2.distanceTraveled * currentRay2.distanceTraveled));
 
+                    // same as before, except that these are the lower two corners
                     Vector3 currentColor1, currentColor2;
-
                     currentColor1 = currentRay1.color * currentInverseSquare1;
                     currentColor2 = currentRay2.color * currentInverseSquare2;
                     
                     currentColor1 = ClampColor(currentColor1);
                     currentColor2 = ClampColor(currentColor2);
                     
+                    // average of all 4 corners
                     Vector3 color = (previousColor1 + previousColor2 + currentColor1 + currentColor2) * 0.25f;
 
                     screen.pixels[x + y * screen.width] = CreateColor(color);
 
                     previousColor1 = currentColor1;
                     previousColor2 = currentColor2;
-
-
-                    // keep for Debug (for now)
-                    //Vector3 pixelDirection = camera.direction + new Vector3(0, (x * xSteps) - 0.5f, -(y * ySteps) + 0.5f);
-                    //Ray debugRay = new Ray(camera.position, pixelDirection);
-                    //Intersection intersect = scene.intersectScene(debugRay);
+                    
+                    // debug stuff
                     if (debugFrame)
-                    {
-                        //DebugRay(debugRay, intersect, CreateColor(color));
                         debugFrame = false;
-                    }
+                    
                 }
             }
             DebugView();
@@ -178,6 +164,7 @@ namespace template
             return color;
         }
 
+        // the primary ray casting method
         public Ray TraceRay(Ray ray, int recursion)
         {
             ray.origin = ray.origin + Lambda * ray.direction;
@@ -188,13 +175,13 @@ namespace template
             {
                 ray.color = scene.SkydomeColor(ray.direction);
                 ray.hitSkybox = true;
-                // set distance to 1 to avoid distance attenuation (would be 1 / infinity = 0 = black otherwise
+                // set distance to 1 to avoid distance attenuation (would be 1 / infinity = 0 = black otherwise)
                 // TODO: make skydome HDR instead of setting the distance to 1
                 ray.distanceTraveled = 1f;
                 return ray;
             }
             
-            // hitting something not transparent
+            // hitting something not transparent and not reflective, aka diffuse
             if (intersect.collider.transparency == 0 && intersect.collider.reflection == 0)
             {
                 Vector3 color = DirectIllumination(intersect) * intersect.collider.color;
@@ -240,15 +227,13 @@ namespace template
 
                 return ray;
             }
-
+            // hitting transparent object, going into recursion
             if (intersect.collider.transparency == 0 && intersect.collider.reflection > 0)
             {
                 float nvalue = 1 - intersect.collider.reflection;
                 float rvalue = intersect.collider.reflection;
 
-                Vector3 u;
-                Vector3 v;
-
+                Vector3 u, v;
                 u = intersect.normal * Vector3.Dot(intersect.normal, ray.direction);
                 v = ray.direction - u;
 
@@ -273,6 +258,7 @@ namespace template
                     texColor += new Vector3(r, r, r);
                 }
 
+                // correct the weight for rays that hit the skydome due to the skydome being semi-HDR
                 if (reflectRay.hitSkybox)
                 {
                     nvalue *= 0.2f;
@@ -280,7 +266,6 @@ namespace template
                 }
 
                 ray.color = texColor * rvalue * reflectRay.color + nvalue * color * texColor;
-                
                 ray.distanceTraveled += reflectRay.distanceTraveled;
 
                 if (debugFrame)
@@ -288,15 +273,13 @@ namespace template
 
                 return ray;
             }
-
+            // hitting di-electric object, going into recursion
             if (intersect.collider.transparency > 0 && intersect.collider.reflection > 0)
             {
                 float tvalue = 1 - intersect.collider.reflection;
                 float rvalue = intersect.collider.reflection;
 
-                Vector3 u;
-                Vector3 v;
-
+                Vector3 u, v;
                 u = intersect.normal * Vector3.Dot(intersect.normal, ray.direction);
                 v = ray.direction - u;
 
@@ -308,15 +291,40 @@ namespace template
                     return ray;
                 }
 
+                //calculate both new rays
                 Ray reflectRay = TraceRay(new Ray(intersect.intersectionPoint, newRayDirection), recursion + 1);
                 Ray transparentRay = refraction(intersect, ray, recursion + 1);
 
+                // adjust if the new ray hit the skydome (due to distance attenuation and the semi-HDR skydome
                 if (transparentRay.hitSkybox)
                     tvalue *= 36;
 
-                //reflectRay.distanceTraveled += ray.distanceTraveled;
+                // I tried implementing Schlick's approximation
+                // I failed
+                
+                float schlick, cos;
+                if(ray.refract == Ray.Refract.Outside)
+                {
+                    schlick = (1 - intersect.collider.refractionIndex) / (1 + intersect.collider.refractionIndex);
+                    cos = 1 - Vector3.Dot(intersect.normal, -ray.direction);
+                }
+                else
+                {
+                    schlick = (intersect.collider.refractionIndex - 1) / (intersect.collider.refractionIndex + 1);
+                    cos = 1 - Vector3.Dot(intersect.normal, ray.direction);
+                }
+                rvalue *= Math.Max(0, schlick + (1-schlick) * (cos * cos) * cos * (cos * cos));
+                if (transparentRay.hitSkybox)
+                {
+                    tvalue *= 0.20f;
+                    transparentRay.distanceTraveled = 1;
+                }
+
+                rvalue *= 0.15f;
+                tvalue *= 0.5f;
+                
+                // scale both ray.colors according to reflectiveness and transparency
                 ray.color = rvalue * reflectRay.color + intersect.collider.transparency * tvalue * transparentRay.color;
-                //ray.color *= 0.5f;
                 ray.distanceTraveled = reflectRay.distanceTraveled;
 
                 if (debugFrame)
@@ -325,6 +333,7 @@ namespace template
                 return ray;
             }
 
+            // debug stuff
             if (debugFrame)
                 DebugRay(ray, intersect, CreateColor(ray.color, true));
             return null;
@@ -335,24 +344,24 @@ namespace template
             Vector3 newDirection;
             Vector3 newOrigin = intersect.intersectionPoint;
             Ray newRay;
+
+            // from outside (refreaction_index_1 = 1)
             if (ray.refract == Ray.Refract.Outside)
             {
-                //newDirection = ray.direction;
                 newDirection = RefractionDirection(ray.direction, intersect.normal, 1, intersect.collider.refractionIndex);
-
                 newRay = new Ray(newOrigin, newDirection);
                 newRay.refract = Ray.Refract.Inside;
             }
+            // from inside (refreaction_index_2 = 1)
             else
             {
                 newDirection = RefractionDirection(ray.direction, intersect.normal, intersect.collider.refractionIndex, 1);
-
                 newRay = new Ray(newOrigin, newDirection);
                 newRay.refract = Ray.Refract.Outside;
             }
             newRay.distanceTraveled = ray.distanceTraveled + intersect.distance;
 
-
+            // avoid going deeper if recursionCap is reached, just assume black
             if (recursion + 1 > recursionCap)
             {
                 ray.color = Vector3.Zero;
@@ -365,22 +374,30 @@ namespace template
 
         }
 
+        // calculate the direction in which the refracted ray would travel
         Vector3 RefractionDirection(Vector3 d, Vector3 n, float n1, float n2)
         {
-            Vector3 u1 = n * Vector3.Dot(n, d);
+            float nDotD = Math.Min(1, Math.Max(-1, Vector3.Dot(n, d)));
+            // split into orthogonal components
+            Vector3 u1 = n * nDotD;
             Vector3 v1 = d - u1;
 
+            // length of the components
             float uMag = u1.Length;
             float vMag = v1.Length;
 
-            float angle1 = (float) Math.Acos(Vector3.Dot(d, n));
-            float angle2 = (float) Math.Asin(Math.Sin(angle1) * (n1 / n2));
+            // calculate old and new angles (or rather the old sin + cos)
+            float angle1 = (float) Math.Acos(nDotD);
+            float sin = Math.Min(1, (float) Math.Sin(angle1) * (n1 / n2));
+            float angle2 = (float) Math.Asin(sin);
             float cos2 = (float) Math.Cos(angle2);
             float sin2 = (float)Math.Sin(angle2);
 
+            // apply sin2 and cos2 to rescale the original components
             Vector3 v2 = v1 * (sin2 / vMag);
             Vector3 u2 = u1 * (cos2 / uMag);
             
+            // re-assemble into new direction
             return v2 + u2;
         }
 
@@ -407,12 +424,10 @@ namespace template
 
                     // debug stuff
                     if (debugFrame)
-                    {
                         DebugShadowRay(shadowRay, lightSource, CreateColor(totalIllumination, true));
-                    }
+                    
                 }
             }
-            //return intersect.collider.color * 100;
             return totalIllumination;
         }
 
@@ -428,8 +443,10 @@ namespace template
         // higher yOffset means image will be moved down
         int yOffset = 200;
 
+
         public void DebugView()
         {
+            // draw the axes
             screen.Print("Camera", (int)(-camera.position.Y * scale + xOffset), (int) (camera.position.X * scale + yOffset), 0xFF0000);
 
             screen.Line((int)(screen.width * 0.75f), 0, (int)(screen.width * 0.75f), screen.height - 1, 0xffffff);
@@ -439,6 +456,7 @@ namespace template
             screen.Print("+y", screen.width - 32, screen.height / 2 + 5, 0xffffff);
             screen.Print("-y", screen.width / 2 + 10, screen.height / 2 + 5, 0xffffff);
 
+            // draw each primitive (with respective label)
             foreach (Primitive p in scene.sceneObjects)
             {
                 if (p is Sphere)
@@ -463,12 +481,11 @@ namespace template
                         }
                     }
                 }
+
                 if (p is Triangle)
-                {
                     screen.Print("TRIANGLE", DebugX(p.position.Y), DebugY(p.position.X) - 10, CreateColor(p.color));
-                    
-                }
             }
+
             foreach (Light l in scene.lightSources)
                 screen.Print("LIGHT", (int)(-l.position.Y * scale + xOffset), (int)(l.position.X * scale + yOffset) - 10, 0x00ffff);
         }
@@ -481,20 +498,18 @@ namespace template
         {
             return (int)(x * scale) + yOffset;
         }
+
+        // mostly for debug rays, to avoid all rays being white
         private Vector3 ScaleColor(Vector3 color)
         {
             float biggestC = Math.Max(color.Z, Math.Max(color.X, color.Y));
-
             color *= (1 / biggestC);
-
             return color;
         }
 
         // draw a debug line for the specified ray.
         public void DebugRay(Ray ray, Intersection i, int c)
         {
-            //c = 0x888888;
-
             Vector3 startPoint = ray.origin;
             Vector3 endPoint;
             
