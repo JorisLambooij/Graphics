@@ -17,11 +17,14 @@ namespace Template_P3 {
 	    int triangleBufferId;					// triangle buffer
 	    int quadBufferId;						// quad buffer
 
+        public Matrix4 meshTransform;
+
 	    // constructor
 	    public Mesh( string fileName )
 	    {
 		    MeshLoader loader = new MeshLoader();
 		    loader.Load( this, fileName );
+            meshTransform = Matrix4.Identity;
 	    }
 
 	    // initialization; called during first render
@@ -78,13 +81,15 @@ namespace Template_P3 {
 
             int specular = GL.GetUniformLocation(shader.programID, "speculr_Color_L1");
             GL.Uniform4(specular, speculr_Color_1);
-            
+
 
             // pass view transform to vertex shader
-            GL.UniformMatrix4(shader.uniform_mview, false, ref transform);
+            Matrix4 m = transform * meshTransform;
+            GL.UniformMatrix4(shader.uniform_mview, false, ref m);
 
             // pass world transform to vertex shader
-            GL.UniformMatrix4(shader.uniform_2wrld, false, ref worldTransform);
+            m = worldTransform * meshTransform;
+            GL.UniformMatrix4(shader.uniform_2wrld, false, ref m);
             
             // bind interleaved vertex data
             GL.EnableClientState( ArrayCap.VertexArray );

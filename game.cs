@@ -36,6 +36,7 @@ namespace Template_P3 {
 	    {
 		    // load teapot
 		    mesh = new Mesh( "../../assets/teapot.obj" );
+            mesh.meshTransform = Matrix4.CreateTranslation(new Vector3(0, 0, 0));
 		    floor = new Mesh( "../../assets/floor.obj" );
 
 		    // initialize stopwatch
