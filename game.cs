@@ -13,6 +13,7 @@ namespace Template_P3 {
 	    // member variables
 	    public Surface screen;					// background surface for printing etc.
 	    Mesh mesh, floor;						// a mesh to draw using OpenGL
+        TreeNode meshNode, floorNode;           // the relation of the mesh with it's children
 	    const float PI = 3.1415926535f;			// PI
 	    float a = 0;							// teapot rotation angle
 	    Stopwatch timer;						// timer for measuring frame duration
@@ -37,10 +38,17 @@ namespace Template_P3 {
 		    // load teapot
 		    mesh = new Mesh( "../../assets/teapot.obj" );
             mesh.meshTransform = Matrix4.CreateTranslation(new Vector3(0, 0, 0));
-		    floor = new Mesh( "../../assets/floor.obj" );
+            meshNode = new TreeNode(mesh);
+            ////Als de mesh op deze treenode 2 kinderen heeft, dan zouden deze op deze manier worden toegevoegd:
+            //meshNode.nodeChildren.Add(kind1);
+            //meshNode.nodeChildren.Add(kind2);
 
-		    // initialize stopwatch
-		    timer = new Stopwatch();
+            floor = new Mesh( "../../assets/floor.obj" );
+            floorNode = new TreeNode(floor);
+            //Als de mesh op deze treenode 0 kinderen heeft, dan worden er geen meshes toegevoegd:
+
+            // initialize stopwatch
+            timer = new Stopwatch();
 		    timer.Reset();
 		    timer.Start();
 
