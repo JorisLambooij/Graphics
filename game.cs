@@ -24,7 +24,7 @@ namespace Template_P3 {
 	    ScreenQuad quad;						// screen filling quad for post processing
 	    bool useRenderTarget = true;
 
-        Vector4 lightPosition_1 = new Vector4(10, 10, 0, 1);
+        Vector4 lightPosition_1 = new Vector4(0, 0, 0, 1);
         Vector4 ambient_Color_1 = new Vector4(0.1f, 0.1f, 0.1f, 1);
         Vector4 diffuse_Color_1 = new Vector4(1, 1, 1, 1);
         Vector4 speculr_Color_1 = new Vector4(0.2f, 0.2f, 0.2f, 1);

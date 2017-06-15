@@ -14,7 +14,7 @@ uniform vec4 ambient_Color_L1;
 uniform vec4 diffuse_Color_L1;
 uniform vec4 speculr_Color_L1;
 
-int alpha = 5;
+int alpha = 500;
 
 // shader output
 out vec4 outputColor;
