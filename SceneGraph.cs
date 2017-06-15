@@ -17,7 +17,7 @@ namespace Template_P3
             //foreach loop vervangen door deze for loop, zodat er geen exception ontstaat als een node geen kinderen heeft.
             for (int i = 0; i < treeNode.nodeChildren.Length; i++)
             {
-                Matrix4 = matrix;
+                Matrix4 matrix;
                 //Matrix van ouder en kind vermenigvuldigen.
                 matrix = ouder * treeNode.nodeChildren[i].meshTransform;
                 //Uitkomst Matrix4 doorgeven aan kind.
