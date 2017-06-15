@@ -14,7 +14,7 @@ uniform vec4 ambient_Color_L1;
 uniform vec4 diffuse_Color_L1;
 uniform vec4 speculr_Color_L1;
 
-int alpha = 500;
+int alpha = 1;
 
 // shader output
 out vec4 outputColor;
@@ -31,15 +31,19 @@ void main()
 	outputColor *= (nDotL * diffuse_Color_L1);
 
 	// plus the specular illumination
-	vec4 normalizedP = normalize(position);
+	vec4 normalizedP = -normalize(position);
 	float nDotP = dot(normal, normalizedP);
 	vec4 reflectedRay = normalizedP - 2 * nDotP * normal; // ?
-	float specularIntensity = pow(min(1, max(0, dot(reflectedRay, lightD1))), alpha);
-	
-	//outputColor += specularIntensity * speculr_Color_L1;
-	outputColor *= 1 + specularIntensity;
+	float specularIntensity = pow(dot(reflectedRay, lightD1), alpha);
+	specularIntensity = max(0, -specularIntensity);
 
+	outputColor += specularIntensity * speculr_Color_L1;
+	//outputColor.y = -specularIntensity / 10;// * speculr_Color_L1.y;
 
 	// plus the ambient light color
 	outputColor += ambient_Color_L1;
+
+	//outputColor.x = -nDotP;
+	//outputColor.y = -nDotP;
+	//outputColor.z = nDotP;
 }

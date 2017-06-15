@@ -12,7 +12,7 @@ namespace Template_P3 {
     {
 	    // member variables
 	    public Surface screen;					// background surface for printing etc.
-	    Mesh mesh, floor;						// a mesh to draw using OpenGL
+	    Mesh mesh, floor, lightbulb;			// a mesh to draw using OpenGL
         TreeNode meshNode, floorNode;           // the relation of the mesh with it's children
 	    const float PI = 3.1415926535f;			// PI
 	    float a = 0;							// teapot rotation angle
@@ -35,9 +35,11 @@ namespace Template_P3 {
         // initialize
         public void Init()
 	    {
+            lightbulb = new Mesh("../../assets/lightbulb.obj");
+
 		    // load teapot
 		    mesh = new Mesh( "../../assets/teapot.obj" );
-            mesh.meshTransform = Matrix4.CreateTranslation(new Vector3(0, 0, 0));
+            mesh.meshTransform = Matrix4.CreateTranslation(new Vector3(0.5f, 0.2f, 0));
             meshNode = new TreeNode(mesh);
             ////Als de mesh op deze treenode 2 kinderen heeft, dan zouden deze op deze manier worden toegevoegd:
             //meshNode.nodeChildren.Add(kind1);
@@ -93,7 +95,7 @@ namespace Template_P3 {
 	
 		    // prepare matrix for vertex shader
 		    Matrix4 transform = Matrix4.CreateFromAxisAngle( new Vector3( 0, 1, 0 ), a );
-            Matrix4 worldTransfrom = transform;
+            Matrix4 worldTransform = transform;
             transform *= Matrix4.CreateTranslation( 0, -4, -15 );
             transform *= Matrix4.CreatePerspectiveFieldOfView( 1.2f, 1.3f, .1f, 1000 );
 
@@ -107,8 +109,10 @@ namespace Template_P3 {
 			    target.Bind();
 
 			    // render scene to render target
-			    mesh.Render( shader, transform, worldTransfrom, wood, lightData);
-			    floor.Render( shader, transform, worldTransfrom, wood, lightData);
+			    mesh.Render( shader, transform, worldTransform, wood, lightData);
+			    floor.Render( shader, transform, worldTransform, wood, lightData);
+
+                //lightbulb.Render(shader, transform, worldTransform, wood, lightData);
 
 			    // render quad
 			    target.Unbind();
@@ -117,8 +121,8 @@ namespace Template_P3 {
 		    else
 		    {
 			    // render scene directly to the screen
-			    mesh.Render( shader, transform, worldTransfrom, wood, lightData);
-			    floor.Render( shader, transform, worldTransfrom, wood, lightData);
+			    mesh.Render( shader, transform, worldTransform, wood, lightData);
+			    floor.Render( shader, transform, worldTransform, wood, lightData);
 		    }
 	    }
     }
