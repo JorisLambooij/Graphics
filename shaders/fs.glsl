@@ -37,7 +37,7 @@ out vec4 outputColor;
 // fragment shader
 void main()
 {
-	float inverseAmount = 0.5;
+	float correctionFactor = 0.5;
 
 	// diffuse color of the mesh (texture)
     outputColor = texture( pixels, uv );// + 0.5f * vec4( normal.xyz, 1 );
@@ -51,7 +51,7 @@ void main()
 	float nDotL2 = dot (normal, lightD2 );
 	float nDotL3 = dot (normal, lightD3 );
 	float nDotL4 = dot (normal, lightD4 );
-	outputColor *= (nDotL1 * diffuse_Color_L1 + nDotL2 * diffuse_Color_L2 + nDotL3 * diffuse_Color_L3 + nDotL4 * diffuse_Color_L4) * inverseAmount;
+	outputColor *= (nDotL1 * diffuse_Color_L1 + nDotL2 * diffuse_Color_L2 + nDotL3 * diffuse_Color_L3 + nDotL4 * diffuse_Color_L4) * correctionFactor;
 
 	// plus the specular illumination
 	vec4 normalizedP = -normalize(position);
@@ -60,23 +60,23 @@ void main()
 
 	float dotProduct1 = min(1, max(0, -dot(reflectedRay, lightD1)));
 	float specularIntensity1 = pow(dotProduct1, alpha);
-	outputColor += specularIntensity1 * speculr_Color_L1 * texture( pixels, uv ) * inverseAmount;
+	outputColor += specularIntensity1 * speculr_Color_L1 * texture( pixels, uv ) * correctionFactor;
 
 	float dotProduct2 = min(1, max(0, -dot(reflectedRay, lightD2)));
 	float specularIntensity2 = pow(dotProduct2, alpha);
-	outputColor += specularIntensity2 * speculr_Color_L2 * texture( pixels, uv ) * inverseAmount;
+	outputColor += specularIntensity2 * speculr_Color_L2 * texture( pixels, uv ) * correctionFactor;
 
 	float dotProduct3 = min(1, max(0, -dot(reflectedRay, lightD3)));
 	float specularIntensity3 = pow(dotProduct3, alpha);
-	outputColor += specularIntensity3 * speculr_Color_L3 * texture( pixels, uv ) * inverseAmount;
+	outputColor += specularIntensity3 * speculr_Color_L3 * texture( pixels, uv ) * correctionFactor;
 
 	float dotProduct4 = min(1, max(0, -dot(reflectedRay, lightD4)));
 	float specularIntensity4 = pow(dotProduct4, alpha);
-	outputColor += specularIntensity4 * speculr_Color_L4 * texture( pixels, uv ) * inverseAmount;
+	outputColor += specularIntensity4 * speculr_Color_L4 * texture( pixels, uv ) * correctionFactor;
 
 
 	// plus the ambient light color
-	outputColor += (ambient_Color_L1 + ambient_Color_L2 + ambient_Color_L3 + ambient_Color_L4) * inverseAmount;
+	outputColor += (ambient_Color_L1 + ambient_Color_L2 + ambient_Color_L3 + ambient_Color_L4) * correctionFactor;
 	
 	// debug lines
 	//outputColor.x = specularIntensity2;
