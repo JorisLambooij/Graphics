@@ -24,11 +24,6 @@ namespace Template_P3 {
 	    ScreenQuad quad;						// screen filling quad for post processing
 	    bool useRenderTarget = true;
 
-        Vector4 lightPosition_1 = new Vector4(0, 0, 0, 1);
-        Vector4 ambient_Color_1 = new Vector4(0.1f, 0.1f, 0.1f, 1);
-        Vector4 diffuse_Color_1 = new Vector4(1, 1, 1, 1);
-        Vector4 speculr_Color_1 = new Vector4(0.2f, 0.2f, 0.2f, 1);
-
         Vector4[] lightData;
 
 
@@ -54,8 +49,6 @@ namespace Template_P3 {
 		    timer.Reset();
 		    timer.Start();
 
-            LightArray();
-
             // create shaders
             shader = new Shader( "../../shaders/vs.glsl", "../../shaders/fs.glsl" );
             postproc = new Shader( "../../shaders/vs_post.glsl", "../../shaders/fs_post.glsl" );
@@ -66,10 +59,13 @@ namespace Template_P3 {
 		    // create the render target
 		    target = new RenderTarget( screen.width, screen.height );
 		    quad = new ScreenQuad();
-   	    }
 
-	    // tick for background surface
-	    public void Tick()
+            LightArray();
+
+        }
+
+        // tick for background surface
+        public void Tick()
 	    {
 		    screen.Clear( 0 );
 		    screen.Print( "hello world", 2, 2, 0xffff00 );
@@ -77,12 +73,51 @@ namespace Template_P3 {
 
         private void LightArray()
         {
+            Vector4 color1 = new Vector4(1, 1, 1, 1);
+            Vector4 lightPosition_1 = new Vector4(0, 0, 0, 1);
+            Vector4 ambient_Color_1 = color1 * 0.1f;
+            Vector4 diffuse_Color_1 = color1;
+            Vector4 speculr_Color_1 = color1;
+
+            Vector4 color2 = new Vector4(1, 1, 1, 1);
+            Vector4 lightPosition_2 = new Vector4(1, 2, 0, 1);
+            Vector4 ambient_Color_2 = color2 * 0.1f;
+            Vector4 diffuse_Color_2 = color2;
+            Vector4 speculr_Color_2 = color2;
+
+            Vector4 color3 = new Vector4(1, 1, 1, 1);
+            Vector4 lightPosition_3 = new Vector4(0, 2, 0, 1);
+            Vector4 ambient_Color_3 = color3 * 0.1f;
+            Vector4 diffuse_Color_3 = color3;
+            Vector4 speculr_Color_3 = color3;
+
+            Vector4 color4 = new Vector4(1, 1, 1, 1);
+            Vector4 lightPosition_4 = new Vector4(0, 2, 10, 1);
+            Vector4 ambient_Color_4 = color3 * 0.1f;
+            Vector4 diffuse_Color_4 = color3;
+            Vector4 speculr_Color_4 = color3;
+
             // set up light data array
-            lightData = new Vector4[1 * 4];
-            lightData[0] = lightPosition_1;
-            lightData[1] = ambient_Color_1;
-            lightData[2] = diffuse_Color_1;
-            lightData[3] = speculr_Color_1;
+            lightData = new Vector4[4 * 4];
+            lightData[00] = lightPosition_1;
+            lightData[01] = ambient_Color_1;
+            lightData[02] = diffuse_Color_1;
+            lightData[03] = speculr_Color_1;
+
+            lightData[04] = lightPosition_2;
+            lightData[05] = ambient_Color_2;
+            lightData[06] = diffuse_Color_2;
+            lightData[07] = speculr_Color_2;
+
+            lightData[08] = lightPosition_3;
+            lightData[09] = ambient_Color_3;
+            lightData[10] = diffuse_Color_3;
+            lightData[11] = speculr_Color_3;
+
+            lightData[12] = lightPosition_4;
+            lightData[13] = ambient_Color_4;
+            lightData[14] = diffuse_Color_4;
+            lightData[15] = speculr_Color_4;
         }
 
         // tick for OpenGL rendering code
