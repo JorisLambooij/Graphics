@@ -63,26 +63,24 @@ namespace Template_P3 {
             // enable shader
             GL.UseProgram( shader.programID );
 
-            Vector4 lightPosition_1 = lightData[00];
-            Vector4 ambient_Color_1 = lightData[01];
+            Vector4 ambient_Color_1 = lightData[00];
+
+            Vector4 lightPosition_1 = lightData[01];
             Vector4 diffuse_Color_1 = lightData[02];
             Vector4 speculr_Color_1 = lightData[03];
 
             Vector4 lightPosition_2 = lightData[04];
-            Vector4 ambient_Color_2 = lightData[05];
-            Vector4 diffuse_Color_2 = lightData[06];
-            Vector4 speculr_Color_2 = lightData[07];
+            Vector4 diffuse_Color_2 = lightData[05];
+            Vector4 speculr_Color_2 = lightData[06];
 
-            Vector4 lightPosition_3 = lightData[08];
-            Vector4 ambient_Color_3 = lightData[09];
-            Vector4 diffuse_Color_3 = lightData[10];
-            Vector4 speculr_Color_3 = lightData[11];
+            Vector4 lightPosition_3 = lightData[07];
+            Vector4 diffuse_Color_3 = lightData[08];
+            Vector4 speculr_Color_3 = lightData[09];
 
-            Vector4 lightPosition_4 = lightData[12];
-            Vector4 ambient_Color_4 = lightData[13];
-            Vector4 diffuse_Color_4 = lightData[14];
-            Vector4 speculr_Color_4 = lightData[15];
-
+            Vector4 lightPosition_4 = lightData[10];
+            Vector4 diffuse_Color_4 = lightData[11];
+            Vector4 speculr_Color_4 = lightData[12];
+            
             // pass lightPos
             int light = GL.GetUniformLocation(shader.programID, "lightPos1");
             GL.Uniform4(light, lightPosition_1);
@@ -94,14 +92,8 @@ namespace Template_P3 {
             GL.Uniform4(light, lightPosition_4);
 
             // pass light colors
-            int ambient = GL.GetUniformLocation(shader.programID, "ambient_Color_L1");
+            int ambient = GL.GetUniformLocation(shader.programID, "ambient_Color");
             GL.Uniform4(ambient, ambient_Color_1);
-            ambient = GL.GetUniformLocation(shader.programID, "ambient_Color_L2");
-            GL.Uniform4(ambient, ambient_Color_2);
-            ambient = GL.GetUniformLocation(shader.programID, "ambient_Color_L3");
-            GL.Uniform4(ambient, ambient_Color_3);
-            ambient = GL.GetUniformLocation(shader.programID, "ambient_Color_L4");
-            GL.Uniform4(ambient, ambient_Color_4);
 
             int diffuse = GL.GetUniformLocation(shader.programID, "diffuse_Color_L1");
             GL.Uniform4(diffuse, diffuse_Color_1);

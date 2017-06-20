@@ -13,19 +13,19 @@ uniform vec4 lightPos2;
 uniform vec4 lightPos3;
 uniform vec4 lightPos4;
 
-uniform vec4 ambient_Color_L1;
+uniform vec4 lightData[13];
+
+uniform vec4 ambient_Color;
+
 uniform vec4 diffuse_Color_L1;
 uniform vec4 speculr_Color_L1;
 
-uniform vec4 ambient_Color_L2;
 uniform vec4 diffuse_Color_L2;
 uniform vec4 speculr_Color_L2;
 
-uniform vec4 ambient_Color_L3;
 uniform vec4 diffuse_Color_L3;
 uniform vec4 speculr_Color_L3;
 
-uniform vec4 ambient_Color_L4;
 uniform vec4 diffuse_Color_L4;
 uniform vec4 speculr_Color_L4;
 
@@ -47,10 +47,10 @@ void main()
 	vec4 lightD2 = normalize(lightPos2 - position);
 	vec4 lightD3 = normalize(lightPos3 - position);
 	vec4 lightD4 = normalize(lightPos4 - position);
-	float nDotL1 = dot (normal, lightD1 );
-	float nDotL2 = dot (normal, lightD2 );
-	float nDotL3 = dot (normal, lightD3 );
-	float nDotL4 = dot (normal, lightD4 );
+	float nDotL1 = max(0, dot (normal, lightD1 ));
+	float nDotL2 = max(0, dot (normal, lightD2 ));
+	float nDotL3 = max(0, dot (normal, lightD3 ));
+	float nDotL4 = max(0, dot (normal, lightD4 ));
 	outputColor *= (nDotL1 * diffuse_Color_L1 + nDotL2 * diffuse_Color_L2 + nDotL3 * diffuse_Color_L3 + nDotL4 * diffuse_Color_L4) * correctionFactor;
 
 	// plus the specular illumination
@@ -60,26 +60,31 @@ void main()
 
 	float dotProduct1 = min(1, max(0, -dot(reflectedRay, lightD1)));
 	float specularIntensity1 = pow(dotProduct1, alpha);
-	outputColor += specularIntensity1 * speculr_Color_L1 * texture( pixels, uv ) * correctionFactor;
+	vec4 specularColor1 = specularIntensity1 * speculr_Color_L1 * texture( pixels, uv ) * correctionFactor;
+	outputColor += specularColor1;
 
 	float dotProduct2 = min(1, max(0, -dot(reflectedRay, lightD2)));
 	float specularIntensity2 = pow(dotProduct2, alpha);
-	outputColor += specularIntensity2 * speculr_Color_L2 * texture( pixels, uv ) * correctionFactor;
+	vec4 specularColor2 = specularIntensity2 * speculr_Color_L2 * texture( pixels, uv ) * correctionFactor;
+	outputColor += specularColor2;
 
 	float dotProduct3 = min(1, max(0, -dot(reflectedRay, lightD3)));
 	float specularIntensity3 = pow(dotProduct3, alpha);
-	outputColor += specularIntensity3 * speculr_Color_L3 * texture( pixels, uv ) * correctionFactor;
+	vec4 specularColor3 = specularIntensity3 * speculr_Color_L3 * texture( pixels, uv ) * correctionFactor;
+	outputColor += specularColor3;
 
 	float dotProduct4 = min(1, max(0, -dot(reflectedRay, lightD4)));
 	float specularIntensity4 = pow(dotProduct4, alpha);
-	outputColor += specularIntensity4 * speculr_Color_L4 * texture( pixels, uv ) * correctionFactor;
+	vec4 specularColor4 = specularIntensity4 * speculr_Color_L4 * texture( pixels, uv ) * correctionFactor;
+	outputColor += specularColor4;
 
 
 	// plus the ambient light color
-	outputColor += (ambient_Color_L1 + ambient_Color_L2 + ambient_Color_L3 + ambient_Color_L4) * correctionFactor;
+	outputColor += ambient_Color * texture( pixels, uv );
 	
 	// debug lines
 	//outputColor.x = 1;
-	//outputColor.y = specularIntensity3;
+	//outputColor.y = 1;
 	//outputColor.z = specularIntensity4;
+	//outputColor = specularColor1 + vec4(0.02, 0.02, 0.02, 1);
 }

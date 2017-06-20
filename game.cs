@@ -22,12 +22,12 @@ namespace Template_P3 {
 	    Texture wood;							// texture to use for rendering
 	    RenderTarget target;					// intermediate render target
 	    ScreenQuad quad;						// screen filling quad for post processing
-	    bool useRenderTarget = false;
+	    bool useRenderTarget = true;
 
         Vector4[] lightData;
 
         //TreeNode rootNode;
-        TreeNode floorNode;
+        SceneGraph floorNode;
 
 
         // initialize
@@ -40,12 +40,12 @@ namespace Template_P3 {
 
             Mesh floor = new Mesh("../../assets/floor.obj");
             floor.meshTransform = Matrix4.Identity;
-            floorNode = new TreeNode(null, floor, wood);
+            floorNode = new SceneGraph(null, floor, wood);
 
             // load teapot
             Mesh mesh = new Mesh( "../../assets/teapot.obj" );
             mesh.meshTransform = Matrix4.CreateTranslation(new Vector3(0.5f, 0.2f, 0));
-            TreeNode meshNode = new TreeNode(floorNode, mesh, wood);
+            SceneGraph meshNode = new SceneGraph(floorNode, mesh, wood);
 
             // initialize stopwatch
             timer = new Stopwatch();
@@ -58,7 +58,7 @@ namespace Template_P3 {
 
 		    // create the render target
 		    target = new RenderTarget( screen.width, screen.height );
-		    quad = new ScreenQuad();
+		    quad = new ScreenQuad(screen.width, screen.height);
 
             LightArray();
 
@@ -73,51 +73,47 @@ namespace Template_P3 {
 
         private void LightArray()
         {
+            Vector4 ambient_Color = new Vector4(1, 1, 1, 1) * 0.1f;
+
             Vector4 color1 = new Vector4(1, 1, 1, 1);
             Vector4 lightPosition_1 = new Vector4(0, 0, 0, 1);
-            Vector4 ambient_Color_1 = color1 * 0.1f;
             Vector4 diffuse_Color_1 = color1;
             Vector4 speculr_Color_1 = color1;
 
             Vector4 color2 = new Vector4(1, 1, 1, 1);
             Vector4 lightPosition_2 = new Vector4(1, 2, 0, 1);
-            Vector4 ambient_Color_2 = color2 * 0.1f;
             Vector4 diffuse_Color_2 = color2;
             Vector4 speculr_Color_2 = color2;
 
             Vector4 color3 = new Vector4(1, 1, 1, 1);
             Vector4 lightPosition_3 = new Vector4(0, 2, 0, 1);
-            Vector4 ambient_Color_3 = color3 * 0.1f;
             Vector4 diffuse_Color_3 = color3;
             Vector4 speculr_Color_3 = color3;
 
             Vector4 color4 = new Vector4(1, 1, 1, 1);
             Vector4 lightPosition_4 = new Vector4(0, 2, 10, 1);
-            Vector4 ambient_Color_4 = color3 * 0.1f;
             Vector4 diffuse_Color_4 = color3;
             Vector4 speculr_Color_4 = color3;
 
             // set up light data array
-            lightData = new Vector4[4 * 4];
-            lightData[00] = lightPosition_1;
-            lightData[01] = ambient_Color_1;
+            lightData = new Vector4[1 + 3 * 4];
+            lightData[00] = ambient_Color;
+
+            lightData[01] = lightPosition_1;
             lightData[02] = diffuse_Color_1;
             lightData[03] = speculr_Color_1;
 
             lightData[04] = lightPosition_2;
-            lightData[05] = ambient_Color_2;
-            lightData[06] = diffuse_Color_2;
-            lightData[07] = speculr_Color_2;
+            lightData[05] = diffuse_Color_2;
+            lightData[06] = speculr_Color_2;
 
-            lightData[08] = lightPosition_3;
-            lightData[09] = ambient_Color_3;
-            lightData[10] = diffuse_Color_3;
-            lightData[11] = speculr_Color_3;
+            lightData[07] = lightPosition_3;
+            lightData[08] = diffuse_Color_3;
+            lightData[09] = speculr_Color_3;
 
-            lightData[12] = lightPosition_4;
-            lightData[13] = ambient_Color_4;
-            lightData[14] = diffuse_Color_4;
-            lightData[15] = speculr_Color_4;
+            lightData[10] = lightPosition_4;
+            lightData[11] = diffuse_Color_4;
+            lightData[12] = speculr_Color_4;
         }
 
         // tick for OpenGL rendering code
@@ -143,26 +139,28 @@ namespace Template_P3 {
 			    // enable render target
 			    target.Bind();
 
-			    //// render scene to render target
-			    //mesh.Render( shader, transform, worldTransform, wood, lightData);
-			    //floor.Render( shader, transform, worldTransform, wood, lightData);
+                //// render scene to render target
+                //mesh.Render( shader, transform, worldTransform, wood, lightData);
+                //floor.Render( shader, transform, worldTransform, wood, lightData);
 
-                floorNode.TreeNodeRender(Matrix4.Identity, shader, worldTransform, lightData);
+                //floorNode.treeNodeMesh.Render(shader, transform, worldTransform, wood, lightData);
+
+                floorNode.TreeNodeRender(shader, transform, worldTransform, lightData);
 
                 //lightbulb.Render(shader, transform, worldTransform, wood, lightData);
 
-			    // render quad
-			    target.Unbind();
+                // render quad
+                target.Unbind();
 			    quad.Render( postproc, target.GetTextureID() );
 		    }
 		    else
 		    {
                 // enable render target
                 target.Bind();
-
+                
                 floorNode.treeNodeMesh.Render(shader, transform, worldTransform, wood, lightData);
                 floorNode.treeNodeChildren[0].treeNodeMesh.Render(shader, transform, worldTransform, wood, lightData);
-
+                
                 //// render scene directly to the screen
                 //mesh.Render( shader, transform, worldTransform, wood, lightData);
                 //floor.Render( shader, transform, worldTransform, wood, lightData);
