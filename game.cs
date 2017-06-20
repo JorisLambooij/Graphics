@@ -1,6 +1,6 @@
 ﻿using System.Diagnostics;
 using OpenTK;
-using OpenTK.Graphics;
+using OpenTK.Input;
 using OpenTK.Graphics.OpenGL;
 
 // minimal OpenTK rendering framework for UU/INFOGR
@@ -25,7 +25,7 @@ namespace Template_P3 {
 	    bool useRenderTarget = true;
 
         Vector4[] lightData;
-
+        Matrix4 camTransform;
 
         // initialize
         public void Init()
@@ -61,7 +61,7 @@ namespace Template_P3 {
 		    quad = new ScreenQuad();
 
             LightArray();
-
+            camTransform = Matrix4.Identity;
         }
 
         // tick for background surface
@@ -127,12 +127,15 @@ namespace Template_P3 {
 		    float frameDuration = timer.ElapsedMilliseconds;
 		    timer.Reset();
 		    timer.Start();
-	
-		    // prepare matrix for vertex shader
-		    Matrix4 transform = Matrix4.CreateFromAxisAngle( new Vector3( 0, 1, 0 ), a );
+
+            HandleInput();
+
+            // prepare matrix for vertex shader
+            Matrix4 transform = Matrix4.CreateFromAxisAngle(new Vector3(0, 1, 0), a);
             Matrix4 worldTransform = transform;
-            transform *= Matrix4.CreateTranslation( 0, -4, -15 );
-            transform *= Matrix4.CreatePerspectiveFieldOfView( 1.2f, 1.3f, .1f, 1000 );
+            transform *= Matrix4.CreateTranslation(0, -4, -15);
+            transform *= camTransform;
+            transform *= Matrix4.CreatePerspectiveFieldOfView(1.2f, 1.3f, .1f, 1000);
 
 		    // update rotation
 		    a += 0.001f * frameDuration; 
@@ -159,7 +162,22 @@ namespace Template_P3 {
 			    mesh.Render( shader, transform, worldTransform, wood, lightData);
 			    floor.Render( shader, transform, worldTransform, wood, lightData);
 		    }
-	    }
-    }
+        }
 
+        private void HandleInput()
+        {
+            Vector3 forward = new Vector3(0, 0, -1) * 0.1f;
+            Vector3 right = new Vector3(1, 0, 0) * 0.1f;
+            KeyboardState keyboard = Keyboard.GetState();
+            if (keyboard[Key.W])
+                camTransform *= Matrix4.CreateTranslation(forward);
+            else if (keyboard[Key.S])
+                camTransform *= Matrix4.CreateTranslation(-forward);
+            if (keyboard[Key.A])
+                camTransform *= Matrix4.CreateTranslation(right);
+            else if (keyboard[Key.D])
+                camTransform *= Matrix4.CreateTranslation(-right);
+        }
+
+    }
 } // namespace Template_P3
