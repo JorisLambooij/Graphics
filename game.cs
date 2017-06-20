@@ -12,8 +12,8 @@ namespace Template_P3 {
     {
 	    // member variables
 	    public Surface screen;					// background surface for printing etc.
-	    Mesh mesh, floor, lightbulb;			// a mesh to draw using OpenGL
-        TreeNode meshNode, floorNode;           // the relation of the mesh with it's children
+	    Mesh lightbulb;		                 	// a mesh to draw using OpenGL
+        //TreeNode meshNode, floorNode;           // the relation of the mesh with it's children
 	    const float PI = 3.1415926535f;			// PI
 	    float a = 0;							// teapot rotation angle
 	    Stopwatch timer;						// timer for measuring frame duration
@@ -22,9 +22,12 @@ namespace Template_P3 {
 	    Texture wood;							// texture to use for rendering
 	    RenderTarget target;					// intermediate render target
 	    ScreenQuad quad;						// screen filling quad for post processing
-	    bool useRenderTarget = true;
+	    bool useRenderTarget = false;
 
         Vector4[] lightData;
+
+        //TreeNode rootNode;
+        TreeNode floorNode;
 
 
         // initialize
@@ -32,17 +35,17 @@ namespace Template_P3 {
 	    {
             lightbulb = new Mesh("../../assets/lightbulb.obj");
 
-		    // load teapot
-		    mesh = new Mesh( "../../assets/teapot.obj" );
-            mesh.meshTransform = Matrix4.CreateTranslation(new Vector3(0.5f, 0.2f, 0));
-            meshNode = new TreeNode(mesh);
-            ////Als de mesh op deze treenode 2 kinderen heeft, dan zouden deze op deze manier worden toegevoegd:
-            //meshNode.nodeChildren.Add(kind1);
-            //meshNode.nodeChildren.Add(kind2);
+            // load a texture
+            wood = new Texture("../../assets/wood.jpg");
 
-            floor = new Mesh( "../../assets/floor.obj" );
-            floorNode = new TreeNode(floor);
-            //Als de mesh op deze treenode 0 kinderen heeft, dan worden er geen meshes toegevoegd:
+            Mesh floor = new Mesh("../../assets/floor.obj");
+            floor.meshTransform = Matrix4.Identity;
+            floorNode = new TreeNode(null, floor, wood);
+
+            // load teapot
+            Mesh mesh = new Mesh( "../../assets/teapot.obj" );
+            mesh.meshTransform = Matrix4.CreateTranslation(new Vector3(0.5f, 0.2f, 0));
+            TreeNode meshNode = new TreeNode(floorNode, mesh, wood);
 
             // initialize stopwatch
             timer = new Stopwatch();
@@ -52,9 +55,6 @@ namespace Template_P3 {
             // create shaders
             shader = new Shader( "../../shaders/vs.glsl", "../../shaders/fs.glsl" );
             postproc = new Shader( "../../shaders/vs_post.glsl", "../../shaders/fs_post.glsl" );
-
-		    // load a texture
-		    wood = new Texture( "../../assets/wood.jpg" );
 
 		    // create the render target
 		    target = new RenderTarget( screen.width, screen.height );
@@ -143,9 +143,11 @@ namespace Template_P3 {
 			    // enable render target
 			    target.Bind();
 
-			    // render scene to render target
-			    mesh.Render( shader, transform, worldTransform, wood, lightData);
-			    floor.Render( shader, transform, worldTransform, wood, lightData);
+			    //// render scene to render target
+			    //mesh.Render( shader, transform, worldTransform, wood, lightData);
+			    //floor.Render( shader, transform, worldTransform, wood, lightData);
+
+                floorNode.TreeNodeRender(Matrix4.Identity, shader, worldTransform, lightData);
 
                 //lightbulb.Render(shader, transform, worldTransform, wood, lightData);
 
@@ -155,10 +157,20 @@ namespace Template_P3 {
 		    }
 		    else
 		    {
-			    // render scene directly to the screen
-			    mesh.Render( shader, transform, worldTransform, wood, lightData);
-			    floor.Render( shader, transform, worldTransform, wood, lightData);
-		    }
+                // enable render target
+                target.Bind();
+
+                floorNode.treeNodeMesh.Render(shader, transform, worldTransform, wood, lightData);
+                floorNode.treeNodeChildren[0].treeNodeMesh.Render(shader, transform, worldTransform, wood, lightData);
+
+                //// render scene directly to the screen
+                //mesh.Render( shader, transform, worldTransform, wood, lightData);
+                //floor.Render( shader, transform, worldTransform, wood, lightData);
+
+                // render quad
+                target.Unbind();
+                quad.Render(postproc, target.GetTextureID());
+            }
 	    }
     }
 
