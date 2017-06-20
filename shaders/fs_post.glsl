@@ -16,6 +16,9 @@ void main()
 	// retrieve input pixel
 	outputColor = texture( pixels, uv ).rgb;
 	
+	// anti-aliasing:
+	// add up the colors of the pixel itself + the 8 surrounding pixels
+	// average the result
 	vec2 uv2 = uv;
 	
 	uv2 = uv + vec2(invScreenRes.x, 0);
@@ -44,14 +47,9 @@ void main()
 	
 	outputColor *= (1.0 / 9.0);
 
+	// keep for now
+	// use to implement vignetting?
 	// apply dummy postprocessing effect
 	//float dx = P.x - 0.5, dy = P.y - 0.5;
 	//float distanceSQ = dx * dx + dy * dy;
-
-	//outputColor *= (0.25 / distanceSQ); //+ 0.5f;
-	//outputColor.x = uv.x;
-
-	//outputColor.x = invScreenRes.x * 1000;
 }
-
-// EOF

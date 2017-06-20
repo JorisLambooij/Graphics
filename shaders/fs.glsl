@@ -53,7 +53,7 @@ void main()
 	float nDotL4 = max(0, dot (normal, lightD4 ));
 	outputColor *= (nDotL1 * diffuse_Color_L1 + nDotL2 * diffuse_Color_L2 + nDotL3 * diffuse_Color_L3 + nDotL4 * diffuse_Color_L4) * correctionFactor;
 
-	// plus the specular illumination
+	// plus the specular illumination per light source
 	vec4 normalizedP = -normalize(position);
 	float nDotP = max(0, dot(normal, normalizedP));
 	vec4 reflectedRay = normalize (normalizedP - 2 * nDotP * normal); // ?
@@ -86,5 +86,4 @@ void main()
 	//outputColor.x = 1;
 	//outputColor.y = 1;
 	//outputColor.z = specularIntensity4;
-	//outputColor = specularColor1 + vec4(0.02, 0.02, 0.02, 1);
 }
