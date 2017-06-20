@@ -79,7 +79,7 @@ void main()
 	outputColor += (ambient_Color_L1 + ambient_Color_L2 + ambient_Color_L3 + ambient_Color_L4) * correctionFactor;
 	
 	// debug lines
-	//outputColor.x = specularIntensity2;
+	//outputColor.x = 1;
 	//outputColor.y = specularIntensity3;
 	//outputColor.z = specularIntensity4;
 }
