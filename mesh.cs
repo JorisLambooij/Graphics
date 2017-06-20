@@ -18,14 +18,18 @@ namespace Template_P3 {
 	    int quadBufferId;						// quad buffer
 
         public Matrix4 meshTransform;
+        public Matrix4 meshScale;
 
 	    // constructor
-	    public Mesh( string fileName )
+	    public Mesh( string fileName, float scale )
 	    {
 		    MeshLoader loader = new MeshLoader();
 		    loader.Load( this, fileName );
             meshTransform = Matrix4.Identity;
-	    }
+            meshScale = Matrix4.CreateScale(scale);
+
+
+        }
 
 	    // initialization; called during first render
 	    public void Prepare( Shader shader )

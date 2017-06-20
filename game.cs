@@ -30,17 +30,18 @@ namespace Template_P3 {
         // initialize
         public void Init()
 	    {
-            lightbulb = new Mesh("../../assets/lightbulb.obj");
+            lightbulb = new Mesh("../../assets/lightbulb.obj", 1);
 
 		    // load teapot
-		    mesh = new Mesh( "../../assets/teapot.obj" );
-            mesh.meshTransform = Matrix4.CreateTranslation(new Vector3(0.5f, 0.2f, 0));
+		    mesh = new Mesh( "../../assets/teapot.obj", 2);
+            mesh.meshTransform *= Matrix4.CreateTranslation(new Vector3(0.5f, 0.2f, 0));
+            mesh.meshTransform *= mesh.meshScale;
             meshNode = new TreeNode(mesh);
             ////Als de mesh op deze treenode 2 kinderen heeft, dan zouden deze op deze manier worden toegevoegd:
             //meshNode.nodeChildren.Add(kind1);
             //meshNode.nodeChildren.Add(kind2);
 
-            floor = new Mesh( "../../assets/floor.obj" );
+            floor = new Mesh( "../../assets/floor.obj", 0);
             floorNode = new TreeNode(floor);
             //Als de mesh op deze treenode 0 kinderen heeft, dan worden er geen meshes toegevoegd:
 

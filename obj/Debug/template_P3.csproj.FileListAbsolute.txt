@@ -26,3 +26,10 @@ C:\Users\Thomas\Documents\Graphics2\bin\Debug\template_P3.exe
 C:\Users\Thomas\Documents\Graphics2\bin\Debug\template_P3.pdb
 C:\Users\Thomas\Documents\Graphics2\bin\Debug\OpenTK.dll
 C:\Users\Thomas\Documents\Graphics2\obj\Debug\template_P3.csprojResolveAssemblyReference.cache
+C:\Users\Lex\Documents\Graphicsschool\bin\Debug\template_P3.exe.config
+C:\Users\Lex\Documents\Graphicsschool\obj\Debug\template_P3.exe
+C:\Users\Lex\Documents\Graphicsschool\obj\Debug\template_P3.pdb
+C:\Users\Lex\Documents\Graphicsschool\bin\Debug\template_P3.exe
+C:\Users\Lex\Documents\Graphicsschool\bin\Debug\template_P3.pdb
+C:\Users\Lex\Documents\Graphicsschool\bin\Debug\OpenTK.dll
+C:\Users\Lex\Documents\Graphicsschool\obj\Debug\template_P3.csprojResolveAssemblyReference.cache
