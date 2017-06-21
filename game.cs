@@ -22,7 +22,7 @@ namespace Template_P3 {
 	    Texture wood;							// texture to use for rendering
 	    RenderTarget target;					// intermediate render target
 	    ScreenQuad quad;						// screen filling quad for post processing
-	    bool useRenderTarget = true;
+	    bool useRenderTarget = false;
 
         Matrix4 camTransform;
         Vector4[] lightData;
@@ -35,35 +35,20 @@ namespace Template_P3 {
         public void Init()
 	    {
             lightbulb = new Mesh("../../assets/lightbulb.obj", 1);
-
-<<<<<<< HEAD
-		    // load teapot
-		    mesh = new Mesh( "../../assets/teapot.obj", 2);
-            mesh.meshTransform *= Matrix4.CreateTranslation(new Vector3(0.5f, 0.2f, 0));
-            mesh.meshTransform *= mesh.meshScale;
-            meshNode = new TreeNode(mesh);
-            ////Als de mesh op deze treenode 2 kinderen heeft, dan zouden deze op deze manier worden toegevoegd:
-            //meshNode.nodeChildren.Add(kind1);
-            //meshNode.nodeChildren.Add(kind2);
-
-            floor = new Mesh( "../../assets/floor.obj", 0);
-            floorNode = new TreeNode(floor);
-            //Als de mesh op deze treenode 0 kinderen heeft, dan worden er geen meshes toegevoegd:
-=======
+            
             // load a texture
             wood = new Texture("../../assets/wood.jpg");
 
-            Mesh floor = new Mesh("../../assets/floor.obj");
+            Mesh floor = new Mesh("../../assets/floor.obj", 1);
             floor.meshTransform = Matrix4.Identity;
             floorNode = new SceneGraph(null, floor, wood);
 
             // load teapot
-            Mesh mesh = new Mesh( "../../assets/teapot.obj" );
-            mesh.meshTransform = Matrix4.CreateTranslation(new Vector3(0.5f, 0.2f, 0));
+            Mesh mesh = new Mesh( "../../assets/teapot.obj", 1);
+            mesh.meshTransform = Matrix4.CreateTranslation(new Vector3(4f, 0f, 0));
             SceneGraph meshNode = new SceneGraph(floorNode, mesh, wood);
 
             camTransform = Matrix4.Identity;
->>>>>>> 28efde38954dddc8bc2848c768f61f3001b45bbc
 
             // initialize stopwatch
             timer = new Stopwatch();
@@ -146,7 +131,7 @@ namespace Template_P3 {
 		    // prepare matrix for vertex shader
 		    Matrix4 transform = Matrix4.CreateFromAxisAngle( new Vector3( 0, 1, 0 ), a );
             Matrix4 worldTransform = transform;
-            transform *= Matrix4.CreateTranslation( 0, -4, -15) * camTransform;
+            transform *= Matrix4.CreateTranslation( 0, -4, -50) * camTransform;
             transform *= Matrix4.CreatePerspectiveFieldOfView( 1.2f, 1.3f, .1f, 1000 );
 
 		    // update rotation

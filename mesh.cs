@@ -27,8 +27,6 @@ namespace Template_P3 {
 		    loader.Load( this, fileName );
             meshTransform = Matrix4.Identity;
             meshScale = Matrix4.CreateScale(scale);
-
-
         }
 
 	    // initialization; called during first render
@@ -119,11 +117,11 @@ namespace Template_P3 {
 
 
             // pass view transform to vertex shader
-            Matrix4 m = transform * meshTransform;
+            Matrix4 m = meshTransform * transform;
             GL.UniformMatrix4(shader.uniform_mview, false, ref m);
 
             // pass world transform to vertex shader
-            m = worldTransform * meshTransform;
+            m =  meshTransform * worldTransform;
             GL.UniformMatrix4(shader.uniform_2wrld, false, ref m);
             
             // bind interleaved vertex data
