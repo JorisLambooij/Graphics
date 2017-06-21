@@ -22,7 +22,7 @@ namespace Template_P3 {
 	    Texture wood;							// texture to use for rendering
 	    RenderTarget target;					// intermediate render target
 	    ScreenQuad quad;						// screen filling quad for post processing
-	    bool useRenderTarget = false;
+	    bool useRenderTarget = true;
 
         Matrix4 camTransform;
         Vector4[] lightData;
@@ -39,14 +39,18 @@ namespace Template_P3 {
             // load a texture
             wood = new Texture("../../assets/wood.jpg");
 
-            Mesh floor = new Mesh("../../assets/floor.obj", 1);
-            floor.meshTransform = Matrix4.Identity;
+            Mesh floor = new Mesh("../../assets/floor.obj", 2);
+            floor.meshTransform = Matrix4.CreateTranslation(new Vector3(0, 0f, 0)); ;
             floorNode = new SceneGraph(null, floor, wood);
+
+            floor = new Mesh("../../assets/floor.obj", 1);
+            floor.meshTransform = Matrix4.CreateTranslation(new Vector3(0, 0.01f, 0)); ;
+            SceneGraph meshNode = new SceneGraph(floorNode, floor, wood);
 
             // load teapot
             Mesh mesh = new Mesh( "../../assets/teapot.obj", 1);
-            mesh.meshTransform = Matrix4.CreateTranslation(new Vector3(4f, 0f, 0));
-            SceneGraph meshNode = new SceneGraph(floorNode, mesh, wood);
+            mesh.meshTransform = Matrix4.CreateTranslation(new Vector3(0f, 1f, 0));
+            meshNode = new SceneGraph(floorNode, mesh, wood);
 
             camTransform = Matrix4.Identity;
 
@@ -131,7 +135,7 @@ namespace Template_P3 {
 		    // prepare matrix for vertex shader
 		    Matrix4 transform = Matrix4.CreateFromAxisAngle( new Vector3( 0, 1, 0 ), a );
             Matrix4 worldTransform = transform;
-            transform *= Matrix4.CreateTranslation( 0, -4, -50) * camTransform;
+            transform *= Matrix4.CreateTranslation( 0, -4, -20) * camTransform;
             transform *= Matrix4.CreatePerspectiveFieldOfView( 1.2f, 1.3f, .1f, 1000 );
 
 		    // update rotation

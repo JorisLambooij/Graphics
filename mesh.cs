@@ -117,11 +117,11 @@ namespace Template_P3 {
 
 
             // pass view transform to vertex shader
-            Matrix4 m = meshTransform * transform;
+            Matrix4 m = meshScale * meshTransform * transform;
             GL.UniformMatrix4(shader.uniform_mview, false, ref m);
 
             // pass world transform to vertex shader
-            m =  meshTransform * worldTransform;
+            m = meshScale * meshTransform * worldTransform;
             GL.UniformMatrix4(shader.uniform_2wrld, false, ref m);
             
             // bind interleaved vertex data

@@ -42,15 +42,17 @@ void main()
 	// diffuse color of the mesh (texture)
     outputColor = texture( pixels, uv );// + 0.5f * vec4( normal.xyz, 1 );
 
+
+	vec4 realNormal = normalize(normal);
 	// times the diffuse illumination (and the diffuse light color)
 	vec4 lightD1 = normalize(lightPos1 - position);
 	vec4 lightD2 = normalize(lightPos2 - position);
 	vec4 lightD3 = normalize(lightPos3 - position);
 	vec4 lightD4 = normalize(lightPos4 - position);
-	float nDotL1 = max(0, dot (normal, lightD1 ));
-	float nDotL2 = max(0, dot (normal, lightD2 ));
-	float nDotL3 = max(0, dot (normal, lightD3 ));
-	float nDotL4 = max(0, dot (normal, lightD4 ));
+	float nDotL1 = max(0, dot (realNormal, lightD1 ));
+	float nDotL2 = max(0, dot (realNormal, lightD2 ));
+	float nDotL3 = max(0, dot (realNormal, lightD3 ));
+	float nDotL4 = max(0, dot (realNormal, lightD4 ));
 	outputColor *= (nDotL1 * diffuse_Color_L1 + nDotL2 * diffuse_Color_L2 + nDotL3 * diffuse_Color_L3 + nDotL4 * diffuse_Color_L4) * correctionFactor;
 
 	// plus the specular illumination per light source
@@ -82,8 +84,13 @@ void main()
 	// plus the ambient light color
 	outputColor += ambient_Color * texture( pixels, uv );
 	
+	/*
 	// debug lines
-	//outputColor.x = 1;
+	outputColor.x = dot (realNormal, lightD1 );
+	outputColor.y = dot (realNormal, lightD2 );
+	outputColor.z = dot (realNormal, lightD3 );
+	//outputColor.y = 0.1f;
 	//outputColor.y = 1;
 	//outputColor.z = specularIntensity4;
+	*/
 }

@@ -16,6 +16,7 @@ void main()
 	// retrieve input pixel
 	outputColor = texture( pixels, uv ).rgb;
 	
+	
 	// anti-aliasing:
 	// add up the colors of the pixel itself + the 8 surrounding pixels
 	// average the result
@@ -46,6 +47,7 @@ void main()
 	outputColor += texture( pixels, uv2 ).rgb;
 	
 	outputColor *= (1.0 / 9.0);
+	
 
 	// keep for now
 	// use to implement vignetting?
