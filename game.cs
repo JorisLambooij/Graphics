@@ -1,6 +1,6 @@
 ﻿using System.Diagnostics;
 using OpenTK;
-using OpenTK.Graphics;
+using OpenTK.Input;
 using OpenTK.Graphics.OpenGL;
 
 // minimal OpenTK rendering framework for UU/INFOGR
@@ -12,8 +12,8 @@ namespace Template_P3 {
     {
 	    // member variables
 	    public Surface screen;					// background surface for printing etc.
-	    Mesh mesh, floor, lightbulb;			// a mesh to draw using OpenGL
-        TreeNode meshNode, floorNode;           // the relation of the mesh with it's children
+	    Mesh lightbulb;		                 	// a mesh to draw using OpenGL
+        //TreeNode meshNode, floorNode;           // the relation of the mesh with it's children
 	    const float PI = 3.1415926535f;			// PI
 	    float a = 0;							// teapot rotation angle
 	    Stopwatch timer;						// timer for measuring frame duration
@@ -24,7 +24,11 @@ namespace Template_P3 {
 	    ScreenQuad quad;						// screen filling quad for post processing
 	    bool useRenderTarget = true;
 
+        Matrix4 camTransform;
         Vector4[] lightData;
+
+        //TreeNode rootNode;
+        SceneGraph floorNode;
 
 
         // initialize
@@ -32,6 +36,7 @@ namespace Template_P3 {
 	    {
             lightbulb = new Mesh("../../assets/lightbulb.obj", 1);
 
+<<<<<<< HEAD
 		    // load teapot
 		    mesh = new Mesh( "../../assets/teapot.obj", 2);
             mesh.meshTransform *= Matrix4.CreateTranslation(new Vector3(0.5f, 0.2f, 0));
@@ -44,6 +49,21 @@ namespace Template_P3 {
             floor = new Mesh( "../../assets/floor.obj", 0);
             floorNode = new TreeNode(floor);
             //Als de mesh op deze treenode 0 kinderen heeft, dan worden er geen meshes toegevoegd:
+=======
+            // load a texture
+            wood = new Texture("../../assets/wood.jpg");
+
+            Mesh floor = new Mesh("../../assets/floor.obj");
+            floor.meshTransform = Matrix4.Identity;
+            floorNode = new SceneGraph(null, floor, wood);
+
+            // load teapot
+            Mesh mesh = new Mesh( "../../assets/teapot.obj" );
+            mesh.meshTransform = Matrix4.CreateTranslation(new Vector3(0.5f, 0.2f, 0));
+            SceneGraph meshNode = new SceneGraph(floorNode, mesh, wood);
+
+            camTransform = Matrix4.Identity;
+>>>>>>> 28efde38954dddc8bc2848c768f61f3001b45bbc
 
             // initialize stopwatch
             timer = new Stopwatch();
@@ -54,12 +74,9 @@ namespace Template_P3 {
             shader = new Shader( "../../shaders/vs.glsl", "../../shaders/fs.glsl" );
             postproc = new Shader( "../../shaders/vs_post.glsl", "../../shaders/fs_post.glsl" );
 
-		    // load a texture
-		    wood = new Texture( "../../assets/wood.jpg" );
-
 		    // create the render target
 		    target = new RenderTarget( screen.width, screen.height );
-		    quad = new ScreenQuad();
+		    quad = new ScreenQuad(screen.width, screen.height);
 
             LightArray();
 
@@ -74,56 +91,53 @@ namespace Template_P3 {
 
         private void LightArray()
         {
+            Vector4 ambient_Color = new Vector4(1, 1, 1, 1) * 0.1f;
+
             Vector4 color1 = new Vector4(1, 1, 1, 1);
             Vector4 lightPosition_1 = new Vector4(0, 0, 0, 1);
-            Vector4 ambient_Color_1 = color1 * 0.1f;
             Vector4 diffuse_Color_1 = color1;
             Vector4 speculr_Color_1 = color1;
 
             Vector4 color2 = new Vector4(1, 1, 1, 1);
             Vector4 lightPosition_2 = new Vector4(1, 2, 0, 1);
-            Vector4 ambient_Color_2 = color2 * 0.1f;
             Vector4 diffuse_Color_2 = color2;
             Vector4 speculr_Color_2 = color2;
 
             Vector4 color3 = new Vector4(1, 1, 1, 1);
             Vector4 lightPosition_3 = new Vector4(0, 2, 0, 1);
-            Vector4 ambient_Color_3 = color3 * 0.1f;
             Vector4 diffuse_Color_3 = color3;
             Vector4 speculr_Color_3 = color3;
 
             Vector4 color4 = new Vector4(1, 1, 1, 1);
             Vector4 lightPosition_4 = new Vector4(0, 2, 10, 1);
-            Vector4 ambient_Color_4 = color3 * 0.1f;
             Vector4 diffuse_Color_4 = color3;
             Vector4 speculr_Color_4 = color3;
 
             // set up light data array
-            lightData = new Vector4[4 * 4];
-            lightData[00] = lightPosition_1;
-            lightData[01] = ambient_Color_1;
+            lightData = new Vector4[1 + 3 * 4];
+            lightData[00] = ambient_Color;
+
+            lightData[01] = lightPosition_1;
             lightData[02] = diffuse_Color_1;
             lightData[03] = speculr_Color_1;
 
             lightData[04] = lightPosition_2;
-            lightData[05] = ambient_Color_2;
-            lightData[06] = diffuse_Color_2;
-            lightData[07] = speculr_Color_2;
+            lightData[05] = diffuse_Color_2;
+            lightData[06] = speculr_Color_2;
 
-            lightData[08] = lightPosition_3;
-            lightData[09] = ambient_Color_3;
-            lightData[10] = diffuse_Color_3;
-            lightData[11] = speculr_Color_3;
+            lightData[07] = lightPosition_3;
+            lightData[08] = diffuse_Color_3;
+            lightData[09] = speculr_Color_3;
 
-            lightData[12] = lightPosition_4;
-            lightData[13] = ambient_Color_4;
-            lightData[14] = diffuse_Color_4;
-            lightData[15] = speculr_Color_4;
+            lightData[10] = lightPosition_4;
+            lightData[11] = diffuse_Color_4;
+            lightData[12] = speculr_Color_4;
         }
 
         // tick for OpenGL rendering code
         public void RenderGL()
 	    {
+            HandleInput();
 		    // measure frame duration
 		    float frameDuration = timer.ElapsedMilliseconds;
 		    timer.Reset();
@@ -132,7 +146,7 @@ namespace Template_P3 {
 		    // prepare matrix for vertex shader
 		    Matrix4 transform = Matrix4.CreateFromAxisAngle( new Vector3( 0, 1, 0 ), a );
             Matrix4 worldTransform = transform;
-            transform *= Matrix4.CreateTranslation( 0, -4, -15 );
+            transform *= Matrix4.CreateTranslation( 0, -4, -15) * camTransform;
             transform *= Matrix4.CreatePerspectiveFieldOfView( 1.2f, 1.3f, .1f, 1000 );
 
 		    // update rotation
@@ -144,23 +158,52 @@ namespace Template_P3 {
 			    // enable render target
 			    target.Bind();
 
-			    // render scene to render target
-			    mesh.Render( shader, transform, worldTransform, wood, lightData);
-			    floor.Render( shader, transform, worldTransform, wood, lightData);
+                //// render scene to render target
+                //mesh.Render( shader, transform, worldTransform, wood, lightData);
+                //floor.Render( shader, transform, worldTransform, wood, lightData);
+
+                //floorNode.treeNodeMesh.Render(shader, transform, worldTransform, wood, lightData);
+
+                floorNode.TreeNodeRender(shader, transform, worldTransform, lightData);
 
                 //lightbulb.Render(shader, transform, worldTransform, wood, lightData);
 
-			    // render quad
-			    target.Unbind();
+                // render quad
+                target.Unbind();
 			    quad.Render( postproc, target.GetTextureID() );
 		    }
 		    else
 		    {
-			    // render scene directly to the screen
-			    mesh.Render( shader, transform, worldTransform, wood, lightData);
-			    floor.Render( shader, transform, worldTransform, wood, lightData);
-		    }
-	    }
-    }
+                // enable render target
+                target.Bind();
+                
+                floorNode.treeNodeMesh.Render(shader, transform, worldTransform, wood, lightData);
+                floorNode.treeNodeChildren[0].treeNodeMesh.Render(shader, transform, worldTransform, wood, lightData);
+                
+                //// render scene directly to the screen
+                //mesh.Render( shader, transform, worldTransform, wood, lightData);
+                //floor.Render( shader, transform, worldTransform, wood, lightData);
 
+                // render quad
+                target.Unbind();
+                quad.Render(postproc, target.GetTextureID());
+            }
+	    }
+
+        private void HandleInput()
+        {
+            Vector3 forward = new Vector3(0, 0, 1) * 0.1f;
+            Vector3 right = new Vector3(1, 0, 0) * 0.1f;
+            KeyboardState keyboard = Keyboard.GetState();
+            if (keyboard[Key.W])
+                camTransform *= Matrix4.CreateTranslation(forward);
+            else if (keyboard[Key.S])
+                camTransform *= Matrix4.CreateTranslation(-forward);
+            if (keyboard[Key.A])
+                camTransform *= Matrix4.CreateTranslation(right);
+            else if (keyboard[Key.D])
+                camTransform *= Matrix4.CreateTranslation(-right);
+        }
+
+    }
 } // namespace Template_P3
