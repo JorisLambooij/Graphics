@@ -28,6 +28,8 @@ namespace Template_P3 {
         int previousMouseX = 0;
         int previousMouseY = 0;
 
+        float mouseSensitivity = 20;
+
         Matrix4 camTransform;
         Vector4[] lightData;
 
@@ -84,7 +86,9 @@ namespace Template_P3 {
 	    {
 		    screen.Clear( 0 );
 		    screen.Print( "hello world", 2, 2, 0xffff00 );
-	    }
+
+            HandleInput();
+        }
 
         private void LightArray()
         {
@@ -134,17 +138,18 @@ namespace Template_P3 {
         // tick for OpenGL rendering code
         public void RenderGL()
 	    {
-            HandleInput();
 		    // measure frame duration
 		    float frameDuration = timer.ElapsedMilliseconds;
 		    timer.Reset();
 		    timer.Start();
-	
-		    // prepare matrix for vertex shader
-		    Matrix4 transform = Matrix4.CreateFromAxisAngle( new Vector3( 0, 1, 0 ), 0 );
+
+            // prepare matrix for vertex shader
+            Matrix4 transform = Matrix4.CreateFromAxisAngle( new Vector3( 0, 1, 0 ), 0 );
             Matrix4 worldTransform = transform;
-            transform *= Matrix4.CreateTranslation( 0, -4, -20) * camTransform;
-            transform *= Matrix4.CreatePerspectiveFieldOfView( 1.2f, 1.3f, .1f, 1000 );
+            transform *= Matrix4.CreateTranslation(0, -4, -20) * Matrix4.CreateTranslation(camTransform.ExtractTranslation());
+            transform *= Matrix4.CreateFromQuaternion(camTransform.ExtractRotation());
+            transform *= Matrix4.CreatePerspectiveFieldOfView(1.2f, 1.3f, .1f, 1000);
+            
 
 		    // update rotation
 		    a += 0.001f * frameDuration; 
@@ -189,10 +194,21 @@ namespace Template_P3 {
 
         private void HandleInput()
         {
-            Vector3 forward = new Vector3(0, 0, 1) * 0.1f;
-            Vector3 right = new Vector3(1, 0, 0) * 0.1f;
+            Vector3 forward = camTransform.Column2.Xyz * 0.1f;
+            Vector3 right = camTransform.Column0.Xyz * 0.1f;
             KeyboardState keyboard = Keyboard.GetState();
             MouseState mousestate = Mouse.GetState();
+
+            Matrix4 translation = Matrix4.CreateTranslation(camTransform.ExtractTranslation());
+            if (keyboard[Key.W])
+                translation *= Matrix4.CreateTranslation(forward);
+            else if (keyboard[Key.S])
+                translation *= Matrix4.CreateTranslation(-forward);
+            if (keyboard[Key.A])
+                translation *= Matrix4.CreateTranslation(right);
+            else if (keyboard[Key.D])
+                translation *= Matrix4.CreateTranslation(-right);
+
 
             currentMouseX = mousestate.X;
             currentMouseY = mousestate.Y;
@@ -200,39 +216,11 @@ namespace Template_P3 {
             int deltaY = currentMouseY - previousMouseY;
 
             Vector3 up = Vector3.UnitY;
-            // right
-            if (deltaX > 0)
-            {
-                Vector3 target = (-camTransform.Column2.Xyz + 0.01f * camTransform.Column0.Xyz).Normalized();
-                camTransform = Matrix4.LookAt(Vector3.Zero, target, up);
-            }
-            // left
-            else if (deltaX < 0)
-            {
-                Vector3 target = (-camTransform.Column2.Xyz - 0.01f * camTransform.Column0.Xyz).Normalized();
-                camTransform = Matrix4.LookAt(Vector3.Zero, target, up);
-            }
-            // up
-            if (deltaY < 0)
-            {
-                Vector3 target = (-camTransform.Column2.Xyz + 0.01f * camTransform.Column1.Xyz).Normalized();
-                camTransform = Matrix4.LookAt(Vector3.Zero, target, up);
-            }
-            // down
-            else if (deltaY > 0)
-            {
-                Vector3 target = (-camTransform.Column2.Xyz - 0.01f * camTransform.Column1.Xyz).Normalized();
-                camTransform = Matrix4.LookAt(Vector3.Zero, target, up);
-            }
+            
+            Vector3 target = (-camTransform.Column2.Xyz + 0.0001f * mouseSensitivity * deltaX * camTransform.Column0.Xyz - 0.0001f * mouseSensitivity * deltaY * camTransform.Column1.Xyz).Normalized();
+            Matrix4 rotation = Matrix4.LookAt(Vector3.Zero, target, up);
 
-            if (keyboard[Key.W])
-                camTransform *= Matrix4.CreateTranslation(forward);
-            else if (keyboard[Key.S])
-                camTransform *= Matrix4.CreateTranslation(-forward);
-            if (keyboard[Key.A])
-                camTransform *= Matrix4.CreateTranslation(right);
-            else if (keyboard[Key.D])
-                camTransform *= Matrix4.CreateTranslation(-right);
+            camTransform = rotation * translation;
 
             previousMouseX = currentMouseX;
             previousMouseY = currentMouseY;
