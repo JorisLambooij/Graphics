@@ -23,10 +23,10 @@ namespace Template_P3 {
 	    RenderTarget target;					// intermediate render target
 	    ScreenQuad quad;						// screen filling quad for post processing
 	    bool useRenderTarget = true;
-        float currentMouseX = 0;
-        float currentMouseY = 0;
-        float previousMouseX = 0;
-        float previousMouseY = 0;
+        int currentMouseX = 0;
+        int currentMouseY = 0;
+        int previousMouseX = 0;
+        int previousMouseY = 0;
 
         Matrix4 camTransform;
         Vector4[] lightData;
@@ -73,6 +73,10 @@ namespace Template_P3 {
 
             LightArray();
 
+            currentMouseX = Mouse.GetState().X;
+            currentMouseY = Mouse.GetState().Y;
+            previousMouseX = currentMouseX;
+            previousMouseY = currentMouseY;
         }
 
         // tick for background surface
@@ -190,6 +194,36 @@ namespace Template_P3 {
             KeyboardState keyboard = Keyboard.GetState();
             MouseState mousestate = Mouse.GetState();
 
+            currentMouseX = mousestate.X;
+            currentMouseY = mousestate.Y;
+            int deltaX = currentMouseX - previousMouseX;
+            int deltaY = currentMouseY - previousMouseY;
+
+            Vector3 up = Vector3.UnitY;
+            // right
+            if (deltaX > 0)
+            {
+                Vector3 target = (-camTransform.Column2.Xyz + 0.01f * camTransform.Column0.Xyz).Normalized();
+                camTransform = Matrix4.LookAt(Vector3.Zero, target, up);
+            }
+            // left
+            else if (deltaX < 0)
+            {
+                Vector3 target = (-camTransform.Column2.Xyz - 0.01f * camTransform.Column0.Xyz).Normalized();
+                camTransform = Matrix4.LookAt(Vector3.Zero, target, up);
+            }
+            // up
+            if (deltaY < 0)
+            {
+                Vector3 target = (-camTransform.Column2.Xyz + 0.01f * camTransform.Column1.Xyz).Normalized();
+                camTransform = Matrix4.LookAt(Vector3.Zero, target, up);
+            }
+            // down
+            else if (deltaY > 0)
+            {
+                Vector3 target = (-camTransform.Column2.Xyz - 0.01f * camTransform.Column1.Xyz).Normalized();
+                camTransform = Matrix4.LookAt(Vector3.Zero, target, up);
+            }
 
             if (keyboard[Key.W])
                 camTransform *= Matrix4.CreateTranslation(forward);
@@ -200,46 +234,8 @@ namespace Template_P3 {
             else if (keyboard[Key.D])
                 camTransform *= Matrix4.CreateTranslation(-right);
 
-            currentMouseX = mousestate.X;
-            currentMouseY = mousestate.Y;
-            /*
-            if (currentMouseX - previousMouseX > 0)
-            {
-                Vector3 newX = (camTransform.Column0.Xyz + camTransform.Column2.Xyz * 0.1f).Normalized();
-                camTransform.Column0 = new Vector4(newX, 0);
-                camTransform.Column2 = new Vector4(Vector3.Cross(newX, Vector3.UnitY), 0);
-            }
-            else if (currentMouseX - previousMouseX < 0)
-            {
-                Vector3 newX = (camTransform.Column0.Xyz - camTransform.Column2.Xyz * 0.1f).Normalized();
-                camTransform.Column0 = new Vector4(newX, 0);
-                camTransform.Column2 = new Vector4( Vector3.Cross(newX, Vector3.UnitY), 0);
-            }*/
-            if (currentMouseY - previousMouseY > 0)
-            {
-                Vector3 newZ = (camTransform.Column2.Xyz + camTransform.Column1.Xyz * 0.1f).Normalized();
-                camTransform.Column2 = new Vector4(newZ, 0);
-                camTransform.Column1 = new Vector4(Vector3.Cross(Vector3.UnitY, newZ), 0);
-            }
-            else if (currentMouseY - previousMouseY < 0)
-            {
-                Vector3 newZ = (camTransform.Column2.Xyz - camTransform.Column1.Xyz * 0.1f).Normalized();
-                camTransform.Column2 = new Vector4(newZ, 0);
-                camTransform.Column1 = new Vector4(Vector3.Cross(newZ, Vector3.UnitY), 0);
-            }
-            /*
-            float zAngle = Vector3.CalculateAngle(camTransform.Column1.Xyz, Vector3.UnitY);
-            if (camTransform.Column0.X < 0)
-            { 
-                camTransform *= Matrix4.CreateRotationZ(zAngle);
-                System.Console.WriteLine(zAngle);
-            }
-            else
-                camTransform *= Matrix4.CreateRotationZ(-zAngle);
-            */
             previousMouseX = currentMouseX;
             previousMouseY = currentMouseY;
-
         }
 
     }
