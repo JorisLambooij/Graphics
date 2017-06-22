@@ -23,6 +23,10 @@ namespace Template_P3 {
 	    RenderTarget target;					// intermediate render target
 	    ScreenQuad quad;						// screen filling quad for post processing
 	    bool useRenderTarget = true;
+        float currentMouseX = 0;
+        float currentMouseY = 0;
+        float previousMouseX = 0;
+        float previousMouseY = 0;
 
         Matrix4 camTransform;
         Vector4[] lightData;
@@ -133,7 +137,7 @@ namespace Template_P3 {
 		    timer.Start();
 	
 		    // prepare matrix for vertex shader
-		    Matrix4 transform = Matrix4.CreateFromAxisAngle( new Vector3( 0, 1, 0 ), a );
+		    Matrix4 transform = Matrix4.CreateFromAxisAngle( new Vector3( 0, 1, 0 ), 0 );
             Matrix4 worldTransform = transform;
             transform *= Matrix4.CreateTranslation( 0, -4, -20) * camTransform;
             transform *= Matrix4.CreatePerspectiveFieldOfView( 1.2f, 1.3f, .1f, 1000 );
@@ -184,6 +188,9 @@ namespace Template_P3 {
             Vector3 forward = new Vector3(0, 0, 1) * 0.1f;
             Vector3 right = new Vector3(1, 0, 0) * 0.1f;
             KeyboardState keyboard = Keyboard.GetState();
+            MouseState mousestate = Mouse.GetState();
+
+
             if (keyboard[Key.W])
                 camTransform *= Matrix4.CreateTranslation(forward);
             else if (keyboard[Key.S])
@@ -192,6 +199,47 @@ namespace Template_P3 {
                 camTransform *= Matrix4.CreateTranslation(right);
             else if (keyboard[Key.D])
                 camTransform *= Matrix4.CreateTranslation(-right);
+
+            currentMouseX = mousestate.X;
+            currentMouseY = mousestate.Y;
+            /*
+            if (currentMouseX - previousMouseX > 0)
+            {
+                Vector3 newX = (camTransform.Column0.Xyz + camTransform.Column2.Xyz * 0.1f).Normalized();
+                camTransform.Column0 = new Vector4(newX, 0);
+                camTransform.Column2 = new Vector4(Vector3.Cross(newX, Vector3.UnitY), 0);
+            }
+            else if (currentMouseX - previousMouseX < 0)
+            {
+                Vector3 newX = (camTransform.Column0.Xyz - camTransform.Column2.Xyz * 0.1f).Normalized();
+                camTransform.Column0 = new Vector4(newX, 0);
+                camTransform.Column2 = new Vector4( Vector3.Cross(newX, Vector3.UnitY), 0);
+            }*/
+            if (currentMouseY - previousMouseY > 0)
+            {
+                Vector3 newZ = (camTransform.Column2.Xyz + camTransform.Column1.Xyz * 0.1f).Normalized();
+                camTransform.Column2 = new Vector4(newZ, 0);
+                camTransform.Column1 = new Vector4(Vector3.Cross(Vector3.UnitY, newZ), 0);
+            }
+            else if (currentMouseY - previousMouseY < 0)
+            {
+                Vector3 newZ = (camTransform.Column2.Xyz - camTransform.Column1.Xyz * 0.1f).Normalized();
+                camTransform.Column2 = new Vector4(newZ, 0);
+                camTransform.Column1 = new Vector4(Vector3.Cross(newZ, Vector3.UnitY), 0);
+            }
+            /*
+            float zAngle = Vector3.CalculateAngle(camTransform.Column1.Xyz, Vector3.UnitY);
+            if (camTransform.Column0.X < 0)
+            { 
+                camTransform *= Matrix4.CreateRotationZ(zAngle);
+                System.Console.WriteLine(zAngle);
+            }
+            else
+                camTransform *= Matrix4.CreateRotationZ(-zAngle);
+            */
+            previousMouseX = currentMouseX;
+            previousMouseY = currentMouseY;
+
         }
 
     }

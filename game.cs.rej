@@ -1,0 +1,9 @@
+diff a/game.cs b/game.cs	(rejected hunks)
+@@ -1,6 +1,6 @@
+ ﻿using System.Diagnostics;
+ using OpenTK;
+-using OpenTK.Graphics;
++using OpenTK.Input;
+ using OpenTK.Graphics.OpenGL;
+ 
+ // minimal OpenTK rendering framework for UU/INFOGR
