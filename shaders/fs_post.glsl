@@ -16,6 +16,9 @@ out vec3 outputColor;
 vec3 colorAt(vec2 uv);
 vec3 colorAt(vec2 uv)
 {
+	float dx = uv.x - 0.5, dy = uv.y - 0.5;
+	float distanceSQ = dx * dx + dy * dy;
+
 	vec3 ORcolor = texture( pixels, uv ).rgb;
 	
 	float a = 1 / 48.0;
@@ -32,6 +35,7 @@ vec3 colorAt(vec2 uv)
 	vec2 colorCubeUV = vec2 (cR / 48.0 + cG, cB);
 	vec3 cubeColor = texture (color_cube, colorCubeUV).xyz;
 
+	//cubeColor.x = distanceSQ;
 	return cubeColor;
 }
 
@@ -76,9 +80,16 @@ void main()
 	outputColor *= (1.0 / 9);
 	
 
+	float vigStrength = 4;
+	float vigOffset = 0.9;
+
 	// keep for now
 	// use to implement vignetting?
 	// apply dummy postprocessing effect
-	//float dx = P.x - 0.5, dy = P.y - 0.5;
-	//float distanceSQ = dx * dx + dy * dy;
+	float dx = P.x - 0.5, dy = P.y - 0.5;
+	float distanceSQ = dx * dx + dy * dy;
+
+	float vigFactor = pow(distanceSQ * vigStrength, vigStrength) + vigOffset;
+
+	//outputColor *= (1 / vigFactor);
 }
