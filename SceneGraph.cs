@@ -37,11 +37,11 @@ namespace Template_P3
             nodeMatrix = Matrix4.Identity;
         }
 
-        public void TreeNodeRender(Shader shader, Matrix4 transform, Matrix4 worldTransform, Vector4[] lightData)
+        public void TreeNodeRender(Shader shader, Matrix4 transform, Matrix4 worldTransform, Vector4[] lightData, Vector4 camDir)
         {
             //Het object in de TreeNode is een mesh.
             if (treeNodeMesh != null)
-                treeNodeMesh.Render(shader, transform, worldTransform, treeNodeTexture, lightData);
+                treeNodeMesh.Render(shader, transform, worldTransform, treeNodeTexture, lightData, camDir);
 
             //foreach loop vervangen door deze for loop, zodat er geen exception ontstaat als een node geen kinderen heeft.
             for (int i = 0; i < treeNodeChildren.Count; i++)
@@ -50,7 +50,7 @@ namespace Template_P3
                 //Matrix van ouder en kind vermenigvuldigen.
                 matrix = treeNodeChildren[i].treeNodeMesh.meshTransform * transform;
                 //Uitkomst Matrix4 doorgeven aan kind.
-                treeNodeChildren[i].TreeNodeRender(shader, matrix, worldTransform, lightData);
+                treeNodeChildren[i].TreeNodeRender(shader, matrix, worldTransform, lightData, camDir);
             }
             //Als een node geen kind heeft, wordt de for loop niet uitgevoerd en houdt de recursie dus op.
         }

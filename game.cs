@@ -35,7 +35,7 @@ namespace Template_P3 {
 
         //TreeNode rootNode;
         SceneGraph floorNode;
-
+        Texture colorCube;
 
         // initialize
         public void Init()
@@ -73,6 +73,8 @@ namespace Template_P3 {
 		    target = new RenderTarget( screen.width, screen.height );
 		    quad = new ScreenQuad(screen.width, screen.height);
 
+            colorCube = new Texture("../../assets/color_cube.png");
+
             LightArray();
 
             currentMouseX = Mouse.GetState().X;
@@ -87,7 +89,7 @@ namespace Template_P3 {
 		    screen.Clear( 0 );
 		    screen.Print( "hello world", 2, 2, 0xffff00 );
 
-            HandleInput();
+            //HandleInput();
         }
 
         private void LightArray()
@@ -95,22 +97,22 @@ namespace Template_P3 {
             Vector4 ambient_Color = new Vector4(1, 1, 1, 1) * 0.1f;
 
             Vector4 color1 = new Vector4(1, 1, 1, 1);
-            Vector4 lightPosition_1 = new Vector4(0, 0, 0, 1);
+            Vector4 lightPosition_1 = new Vector4(10, 10, -10, 1);
             Vector4 diffuse_Color_1 = color1;
             Vector4 speculr_Color_1 = color1;
 
             Vector4 color2 = new Vector4(1, 1, 1, 1);
-            Vector4 lightPosition_2 = new Vector4(1, 2, 0, 1);
+            Vector4 lightPosition_2 = new Vector4(10, 10, 10, 1);
             Vector4 diffuse_Color_2 = color2;
             Vector4 speculr_Color_2 = color2;
 
             Vector4 color3 = new Vector4(1, 1, 1, 1);
-            Vector4 lightPosition_3 = new Vector4(0, 2, 0, 1);
+            Vector4 lightPosition_3 = new Vector4(-10, 10, 10, 1);
             Vector4 diffuse_Color_3 = color3;
             Vector4 speculr_Color_3 = color3;
 
             Vector4 color4 = new Vector4(1, 1, 1, 1);
-            Vector4 lightPosition_4 = new Vector4(0, 2, 10, 1);
+            Vector4 lightPosition_4 = new Vector4(-10, 10, -10, 1);
             Vector4 diffuse_Color_4 = color3;
             Vector4 speculr_Color_4 = color3;
 
@@ -145,7 +147,7 @@ namespace Template_P3 {
 
             // prepare matrix for vertex shader
             Matrix4 transform = Matrix4.CreateFromAxisAngle( new Vector3( 0, 1, 0 ), 0 );
-            Matrix4 worldTransform = transform;
+            Matrix4 worldTransform = transform * Matrix4.CreateTranslation(camTransform.ExtractTranslation());
             transform *= Matrix4.CreateTranslation(0, -4, -20) * Matrix4.CreateTranslation(camTransform.ExtractTranslation());
             transform *= Matrix4.CreateFromQuaternion(camTransform.ExtractRotation());
             transform *= Matrix4.CreatePerspectiveFieldOfView(1.2f, 1.3f, .1f, 1000);
@@ -155,7 +157,9 @@ namespace Template_P3 {
 		    a += 0.001f * frameDuration; 
 		    if (a > 2 * PI) a -= 2 * PI;
 
-		    if (useRenderTarget)
+            Vector4 camDir = new Vector4(-camTransform.ExtractTranslation(), 0);
+
+            if (useRenderTarget)
 		    {
 			    // enable render target
 			    target.Bind();
@@ -166,21 +170,21 @@ namespace Template_P3 {
 
                 //floorNode.treeNodeMesh.Render(shader, transform, worldTransform, wood, lightData);
 
-                floorNode.TreeNodeRender(shader, transform, worldTransform, lightData);
-
+                floorNode.TreeNodeRender(shader, transform, worldTransform, lightData, camDir);
+                //System.Console.WriteLine(camDir);
                 //lightbulb.Render(shader, transform, worldTransform, wood, lightData);
 
                 // render quad
                 target.Unbind();
-			    quad.Render( postproc, target.GetTextureID() );
+			    quad.Render( postproc, target.GetTextureID(), colorCube);
 		    }
 		    else
 		    {
                 // enable render target
                 target.Bind();
                 
-                floorNode.treeNodeMesh.Render(shader, transform, worldTransform, wood, lightData);
-                floorNode.treeNodeChildren[0].treeNodeMesh.Render(shader, transform, worldTransform, wood, lightData);
+                floorNode.treeNodeMesh.Render(shader, transform, worldTransform, wood, lightData, camDir);
+                floorNode.treeNodeChildren[0].treeNodeMesh.Render(shader, transform, worldTransform, wood, lightData, camDir);
                 
                 //// render scene directly to the screen
                 //mesh.Render( shader, transform, worldTransform, wood, lightData);
@@ -188,7 +192,7 @@ namespace Template_P3 {
 
                 // render quad
                 target.Unbind();
-                quad.Render(postproc, target.GetTextureID());
+                quad.Render(postproc, target.GetTextureID(), colorCube);
             }
 	    }
 

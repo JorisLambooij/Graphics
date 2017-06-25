@@ -35,22 +35,29 @@ namespace Template_P3 {
 	    }
 
 	    // render the mesh using the supplied shader and matrix
-	    public void Render( Shader shader, int textureID )
+	    public void Render( Shader shader, int textureID, Texture colorCube)
 	    {
 		    // on first run, prepare buffers
 		    Prepare( shader );
-
-		    // enable texture
-		    int texLoc = GL.GetUniformLocation( shader.programID, "pixels" );
-		    GL.Uniform1( texLoc, 0 );
-		    GL.ActiveTexture( TextureUnit.Texture0 );
-		    GL.BindTexture( TextureTarget.Texture2D, textureID );
 
 		    // enable shader
 		    GL.UseProgram( shader.programID );
 
             int screenRes = GL.GetUniformLocation(shader.programID, "invScreenRes");
             GL.Uniform2(screenRes, new Vector2(1f / width, 1f / height));
+
+            // enable texture
+            int texLoc = GL.GetUniformLocation(shader.programID, "pixels");
+            GL.Uniform1(texLoc, 0);
+            GL.ActiveTexture(TextureUnit.Texture0);
+            GL.BindTexture(TextureTarget.Texture2D, textureID);
+
+            int cCubeID = GL.GetUniformLocation(shader.programID, "color_cube");
+            GL.Uniform1(cCubeID, 1);
+            //GL.Enable(EnableCap.Texture2D, cCubeID);
+            GL.ActiveTexture(TextureUnit.Texture1);
+            GL.BindTexture(TextureTarget.Texture2D, colorCube.id);
+
 
             // enable position and uv attributes
             GL.EnableVertexAttribArray( shader.attribute_vpos );

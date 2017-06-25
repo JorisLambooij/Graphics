@@ -50,8 +50,9 @@ namespace Template_P3 {
 		    GL.BufferData( BufferTarget.ElementArrayBuffer, (IntPtr)(quads.Length * Marshal.SizeOf( typeof( ObjQuad ) )), quads, BufferUsageHint.StaticDraw );
 	    }
 
+
 	    // render the mesh using the supplied shader and matrix
-	    public void Render( Shader shader, Matrix4 transform, Matrix4 worldTransform, Texture texture , Vector4[] lightData)
+	    public void Render( Shader shader, Matrix4 transform, Matrix4 worldTransform, Texture texture , Vector4[] lightData, Vector4 camDir)
 	    {
 		    // on first run, prepare buffers
 		    Prepare( shader );
@@ -67,19 +68,19 @@ namespace Template_P3 {
 
             Vector4 ambient_Color_1 = lightData[00];
 
-            Vector4 lightPosition_1 = lightData[01];
+            Vector4 lightPosition_1 = Vector4.Transform(lightData[01], meshScale * meshTransform * worldTransform);
             Vector4 diffuse_Color_1 = lightData[02];
             Vector4 speculr_Color_1 = lightData[03];
 
-            Vector4 lightPosition_2 = lightData[04];
+            Vector4 lightPosition_2 = Vector4.Transform(lightData[04], meshScale * meshTransform * worldTransform);
             Vector4 diffuse_Color_2 = lightData[05];
             Vector4 speculr_Color_2 = lightData[06];
 
-            Vector4 lightPosition_3 = lightData[07];
+            Vector4 lightPosition_3 = Vector4.Transform(lightData[07], meshScale * meshTransform * worldTransform);
             Vector4 diffuse_Color_3 = lightData[08];
             Vector4 speculr_Color_3 = lightData[09];
 
-            Vector4 lightPosition_4 = lightData[10];
+            Vector4 lightPosition_4 = Vector4.Transform(lightData[10], meshScale * meshTransform * worldTransform);
             Vector4 diffuse_Color_4 = lightData[11];
             Vector4 speculr_Color_4 = lightData[12];
             
@@ -123,7 +124,11 @@ namespace Template_P3 {
             // pass world transform to vertex shader
             m = meshScale * meshTransform * worldTransform;
             GL.UniformMatrix4(shader.uniform_2wrld, false, ref m);
-            
+
+            int camD = GL.GetUniformLocation(shader.programID, "camDir");
+            //((Vector3 camDir = transform.ExtractRotation().Xyz;
+            GL.Uniform4(camD, camDir);
+
             // bind interleaved vertex data
             GL.EnableClientState( ArrayCap.VertexArray );
 		    GL.BindBuffer( BufferTarget.ArrayBuffer, vertexBufferId );
