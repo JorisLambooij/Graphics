@@ -13,14 +13,31 @@ uniform sampler2D color_cube;
 // shader output
 out vec3 outputColor;
 
+float chromaticAberration = 1.006;
+
 vec3 colorAt(vec2 uv);
 vec3 colorAt(vec2 uv)
 {
 	float dx = uv.x - 0.5, dy = uv.y - 0.5;
 	float distanceSQ = dx * dx + dy * dy;
+	//between 0.25 + 0.25 = 0.5 and -0.5
 
-	vec3 ORcolor = texture( pixels, uv ).rgb;
+	float inverse = 1 / chromaticAberration;
+	float dx2 = dx * chromaticAberration;
+	float dy2 = dy * chromaticAberration;
+	vec2 ca_UV2 = vec2( dx2 + 0.5 , dy2 + 0.5);
 	
+	float dx3 = dx * inverse;
+	float dy3 = dy * inverse;
+	vec2 ca_UV3 = vec2( dx3 + 0.5 , dy3 + 0.5);
+	
+
+	vec3 ORcolor = vec3(0, 0, 0);
+	ORcolor.x = texture( pixels, ca_UV2 ).x;
+	ORcolor.y = texture( pixels, uv ).y;
+	ORcolor.z = texture( pixels, ca_UV3 ).z;
+	
+
 	float a = 1 / 48.0;
 	float b = 47 / 48.0;
 
@@ -35,7 +52,7 @@ vec3 colorAt(vec2 uv)
 	vec2 colorCubeUV = vec2 (cR / 48.0 + cG, cB);
 	vec3 cubeColor = texture (color_cube, colorCubeUV).xyz;
 
-	//cubeColor.x = distanceSQ;
+	//cubeColor.xy = ca_UV;
 	return cubeColor;
 }
 

@@ -83,8 +83,9 @@ namespace Template_P3 {
             Vector4 lightPosition_4 = Vector4.Transform(lightData[10], meshScale * meshTransform * worldTransform);
             Vector4 diffuse_Color_4 = lightData[11];
             Vector4 speculr_Color_4 = lightData[12];
-            
-            // pass lightPos
+            Vector4 spotlightDir_4 = lightData[13];
+
+            // pass lightPos + spotlight direction
             int light = GL.GetUniformLocation(shader.programID, "lightPos1");
             GL.Uniform4(light, lightPosition_1);
             light = GL.GetUniformLocation(shader.programID, "lightPos2");
@@ -93,6 +94,8 @@ namespace Template_P3 {
             GL.Uniform4(light, lightPosition_3);
             light = GL.GetUniformLocation(shader.programID, "lightPos4");
             GL.Uniform4(light, lightPosition_4);
+            light = GL.GetUniformLocation(shader.programID, "spotLightDir_4");
+            GL.Uniform4(light, spotlightDir_4);
 
             // pass light colors
             int ambient = GL.GetUniformLocation(shader.programID, "ambient_Color");

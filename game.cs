@@ -45,12 +45,12 @@ namespace Template_P3 {
             // load a texture
             wood = new Texture("../../assets/wood.jpg");
 
-            Mesh floor = new Mesh("../../assets/floor.obj", 2);
+            Mesh floor = new Mesh("../../assets/floor.obj", 4f);
             floor.meshTransform = Matrix4.CreateTranslation(new Vector3(0, 0f, 0)); ;
             floorNode = new SceneGraph(null, floor, wood);
 
-            floor = new Mesh("../../assets/floor.obj", 1);
-            floor.meshTransform = Matrix4.CreateTranslation(new Vector3(0, 0.01f, 0)); ;
+            floor = new Mesh("../../assets/teapot.obj", 0.5f);
+            floor.meshTransform = Matrix4.CreateTranslation(new Vector3(6, 4f, 0)); ;
             SceneGraph meshNode = new SceneGraph(floorNode, floor, wood);
 
             // load teapot
@@ -89,7 +89,7 @@ namespace Template_P3 {
 		    screen.Clear( 0 );
 		    screen.Print( "hello world", 2, 2, 0xffff00 );
 
-            //HandleInput();
+            HandleInput();
         }
 
         private void LightArray()
@@ -112,12 +112,13 @@ namespace Template_P3 {
             Vector4 speculr_Color_3 = color3;
 
             Vector4 color4 = new Vector4(1, 1, 1, 1);
-            Vector4 lightPosition_4 = new Vector4(-10, 10, -10, 1);
-            Vector4 diffuse_Color_4 = color3;
-            Vector4 speculr_Color_4 = color3;
+            Vector4 lightPosition_4 = new Vector4(2, 10, 0, 1);
+            Vector4 diffuse_Color_4 = color4;
+            Vector4 speculr_Color_4 = color4;
+            Vector4 spotLightDir_4 = new Vector4(0, -1, 0, 0);
 
             // set up light data array
-            lightData = new Vector4[1 + 3 * 4];
+            lightData = new Vector4[2 + 3 * 4];
             lightData[00] = ambient_Color;
 
             lightData[01] = lightPosition_1;
@@ -135,6 +136,7 @@ namespace Template_P3 {
             lightData[10] = lightPosition_4;
             lightData[11] = diffuse_Color_4;
             lightData[12] = speculr_Color_4;
+            lightData[13] = spotLightDir_4;
         }
 
         // tick for OpenGL rendering code
