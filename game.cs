@@ -20,7 +20,7 @@ namespace Template_P3 {
 	    Stopwatch timer;						// timer for measuring frame duration
 	    Shader shader;							// shader to use for rendering
 	    Shader postproc;                        // shader to use for post processing
-        Texture wood, tiles, dwarfTexture, eyes_blue, marble;							// texture to use for rendering
+        Texture wood, tiles, dwarfTexture, eyes_blue, marble, dragonTexture, diamondTexture;							// texture to use for rendering
 	    RenderTarget target;					// intermediate render target
 	    ScreenQuad quad;						// screen filling quad for post processing
 	    bool useRenderTarget = true;
@@ -91,6 +91,18 @@ namespace Template_P3 {
             Mesh column4 = new Mesh("../../assets/column.obj", 0.5f);
             column4.meshTransform = Matrix4.CreateTranslation(new Vector3(-13f, -4f, 13f));
             SceneGraph columnNode4 = new SceneGraph(floorNode, column4, marble);
+
+            //Load Dragon
+            dragonTexture = new Texture("../../assets/test.jpg");
+            Mesh dragon = new Mesh("../../assets/dragon.obj", 1);
+            dragon.meshTransform = Matrix4.CreateTranslation(new Vector3(0f, 0f, 0f));
+            SceneGraph dragonNode = new SceneGraph(floorNode, dragon, dragonTexture);
+
+            ////Load Diamond
+            //diamondTexture = new Texture("../../assets/test.jpg");
+            //Mesh diamond = new Mesh("../../assets/diamond.obj", 0.005f);
+            //diamond.meshTransform = Matrix4.CreateTranslation(new Vector3(0f, -1f, 0f));
+            //SceneGraph diamondNode = new SceneGraph(floorNode, diamond, diamondTexture);
 
 
             camTransform = Matrix4.Identity;
