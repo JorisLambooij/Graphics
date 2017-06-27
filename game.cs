@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics;
+using System;
 using OpenTK;
 using OpenTK.Input;
 using OpenTK.Graphics.OpenGL;
@@ -19,7 +20,7 @@ namespace Template_P3 {
 	    Stopwatch timer;						// timer for measuring frame duration
 	    Shader shader;							// shader to use for rendering
 	    Shader postproc;						// shader to use for post processing
-	    Texture wood;							// texture to use for rendering
+	    Texture wood, tiles;							// texture to use for rendering
 	    RenderTarget target;					// intermediate render target
 	    ScreenQuad quad;						// screen filling quad for post processing
 	    bool useRenderTarget = true;
@@ -35,7 +36,10 @@ namespace Template_P3 {
 
         //TreeNode rootNode;
         SceneGraph floorNode;
-        Texture colorCube;
+        Texture colorCube_ID, colorCube_BW, colorCube_VNTG;
+        enum Filter { None, BlackWhite, Vintage};
+        Filter filter = Filter.None;
+
 
         // initialize
         public void Init()
@@ -44,18 +48,20 @@ namespace Template_P3 {
             
             // load a texture
             wood = new Texture("../../assets/wood.jpg");
+            tiles = new Texture("../../assets/tiles.jpg");
+
 
             Mesh floor = new Mesh("../../assets/floor.obj", 4f);
             floor.meshTransform = Matrix4.CreateTranslation(new Vector3(0, 0f, 0)); ;
-            floorNode = new SceneGraph(null, floor, wood);
+            floorNode = new SceneGraph(null, floor, tiles);
 
-            floor = new Mesh("../../assets/teapot.obj", 0.5f);
-            floor.meshTransform = Matrix4.CreateTranslation(new Vector3(6, 4f, 0)); ;
-            SceneGraph meshNode = new SceneGraph(floorNode, floor, wood);
-
-            // load teapot
+            // load teapots
             Mesh mesh = new Mesh( "../../assets/teapot.obj", 1);
             mesh.meshTransform = Matrix4.CreateTranslation(new Vector3(0f, 1f, 0));
+            SceneGraph meshNode = new SceneGraph(floorNode, mesh, wood);
+
+            mesh = new Mesh("../../assets/teapot.obj", 0.5f);
+            mesh.meshTransform = Matrix4.CreateTranslation(new Vector3(6, 4f, 0)); ;
             meshNode = new SceneGraph(floorNode, mesh, wood);
 
             camTransform = Matrix4.Identity;
@@ -73,7 +79,10 @@ namespace Template_P3 {
 		    target = new RenderTarget( screen.width, screen.height );
 		    quad = new ScreenQuad(screen.width, screen.height);
 
-            colorCube = new Texture("../../assets/color_cube.png");
+            colorCube_ID = new Texture("../../assets/color_cube.png");
+            colorCube_BW = new Texture("../../assets/color_cube_bw.png");
+            colorCube_VNTG = new Texture("../../assets/color_cube_vintage.png");
+
 
             LightArray();
 
@@ -96,12 +105,12 @@ namespace Template_P3 {
         {
             Vector4 ambient_Color = new Vector4(1, 1, 1, 1) * 0.1f;
 
-            Vector4 color1 = new Vector4(1, 1, 1, 1);
+            Vector4 color1 = new Vector4(3, 3, 3, 1);
             Vector4 lightPosition_1 = new Vector4(10, 10, -10, 1);
             Vector4 diffuse_Color_1 = color1;
             Vector4 speculr_Color_1 = color1;
 
-            Vector4 color2 = new Vector4(1, 1, 1, 1);
+            Vector4 color2 = new Vector4(0, 1, 1, 1);
             Vector4 lightPosition_2 = new Vector4(10, 10, 10, 1);
             Vector4 diffuse_Color_2 = color2;
             Vector4 speculr_Color_2 = color2;
@@ -111,11 +120,11 @@ namespace Template_P3 {
             Vector4 diffuse_Color_3 = color3;
             Vector4 speculr_Color_3 = color3;
 
-            Vector4 color4 = new Vector4(1, 1, 1, 1);
-            Vector4 lightPosition_4 = new Vector4(2, 10, 0, 1);
+            Vector4 color4 = new Vector4(2, 0, 0, 1);
+            Vector4 lightPosition_4 = new Vector4(-2, 8, 0, 1);
             Vector4 diffuse_Color_4 = color4;
             Vector4 speculr_Color_4 = color4;
-            Vector4 spotLightDir_4 = new Vector4(0, -1, 0, 0);
+            Vector4 spotLightDir_4 = new Vector4(-0.1f, -1, 0, 0);
 
             // set up light data array
             lightData = new Vector4[2 + 3 * 4];
@@ -159,6 +168,8 @@ namespace Template_P3 {
 		    a += 0.001f * frameDuration; 
 		    if (a > 2 * PI) a -= 2 * PI;
 
+            lightData[01] = new Vector4((float)(10 * Math.Sin(a)), 10, (float)(-10 * Math.Cos(a)), 1);
+
             Vector4 camDir = new Vector4(-camTransform.ExtractTranslation(), 0);
 
             if (useRenderTarget)
@@ -166,35 +177,37 @@ namespace Template_P3 {
 			    // enable render target
 			    target.Bind();
 
-                //// render scene to render target
-                //mesh.Render( shader, transform, worldTransform, wood, lightData);
-                //floor.Render( shader, transform, worldTransform, wood, lightData);
-
-                //floorNode.treeNodeMesh.Render(shader, transform, worldTransform, wood, lightData);
-
+                // render scene to render target
                 floorNode.TreeNodeRender(shader, transform, worldTransform, lightData, camDir);
-                //System.Console.WriteLine(camDir);
-                //lightbulb.Render(shader, transform, worldTransform, wood, lightData);
 
                 // render quad
                 target.Unbind();
-			    quad.Render( postproc, target.GetTextureID(), colorCube);
+                switch (filter)
+                {
+                    case (Filter.BlackWhite):
+                        quad.Render(postproc, target.GetTextureID(), colorCube_BW);
+                        break;
+                    case (Filter.Vintage):
+                        quad.Render(postproc, target.GetTextureID(), colorCube_VNTG);
+                        break;
+                    case (Filter.None):
+                    default:
+                        quad.Render(postproc, target.GetTextureID(), colorCube_ID);
+                        break;
+                }
 		    }
 		    else
 		    {
                 // enable render target
                 target.Bind();
-                
+
+                // render scene directly to the screen
                 floorNode.treeNodeMesh.Render(shader, transform, worldTransform, wood, lightData, camDir);
                 floorNode.treeNodeChildren[0].treeNodeMesh.Render(shader, transform, worldTransform, wood, lightData, camDir);
                 
-                //// render scene directly to the screen
-                //mesh.Render( shader, transform, worldTransform, wood, lightData);
-                //floor.Render( shader, transform, worldTransform, wood, lightData);
-
                 // render quad
                 target.Unbind();
-                quad.Render(postproc, target.GetTextureID(), colorCube);
+                quad.Render(postproc, target.GetTextureID(), colorCube_ID);
             }
 	    }
 
@@ -202,6 +215,7 @@ namespace Template_P3 {
         {
             Vector3 forward = camTransform.Column2.Xyz * 0.1f;
             Vector3 right = camTransform.Column0.Xyz * 0.1f;
+            Vector3 up = camTransform.Column1.Xyz * 0.1f;
             KeyboardState keyboard = Keyboard.GetState();
             MouseState mousestate = Mouse.GetState();
 
@@ -214,17 +228,27 @@ namespace Template_P3 {
                 translation *= Matrix4.CreateTranslation(right);
             else if (keyboard[Key.D])
                 translation *= Matrix4.CreateTranslation(-right);
+            if (keyboard[Key.Space])
+                translation *= Matrix4.CreateTranslation(-up);
+            else if (keyboard[Key.LControl])
+                translation *= Matrix4.CreateTranslation(up);
 
+            if (keyboard[Key.B])
+                filter = Filter.BlackWhite;
+            else if(keyboard[Key.N])
+                filter = Filter.None;
+            else if (keyboard[Key.V])
+                filter = Filter.Vintage;
 
             currentMouseX = mousestate.X;
             currentMouseY = mousestate.Y;
             int deltaX = currentMouseX - previousMouseX;
             int deltaY = currentMouseY - previousMouseY;
 
-            Vector3 up = Vector3.UnitY;
+            Vector3 up2 = Vector3.UnitY;
             
             Vector3 target = (-camTransform.Column2.Xyz + 0.0001f * mouseSensitivity * deltaX * camTransform.Column0.Xyz - 0.0001f * mouseSensitivity * deltaY * camTransform.Column1.Xyz).Normalized();
-            Matrix4 rotation = Matrix4.LookAt(Vector3.Zero, target, up);
+            Matrix4 rotation = Matrix4.LookAt(Vector3.Zero, target, up2);
 
             camTransform = rotation * translation;
 

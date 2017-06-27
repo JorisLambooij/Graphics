@@ -6,6 +6,7 @@ in vec4 normal;					// interpolated normal
 in vec4 position;
 
 in mat4 transform_world;
+in mat4 transform_view;
 
 in vec4 tangent;
 in vec4 bitangent;
@@ -44,11 +45,12 @@ out vec4 outputColor;
 void main()
 {
 	float correctionFactor = 0.5;
-	float lightIntensity = 0.7;
+	float lightIntensity = 0.6;
 
 	// diffuse color of the mesh (texture)
     outputColor = texture( pixels, uv );// + 0.5f * vec4( normal.xyz, 1 );
 
+	//vec4 rlightPos4 = transform_world * lightPos4;
 
 	vec4 realNormal = normalize(normal);
 	// times the diffuse illumination (and the diffuse light color)
@@ -64,25 +66,23 @@ void main()
 	float nDotL2 = max(0, dot (realNormal, lightD2 )) * lightIntensity;
 	float nDotL3 = max(0, dot (realNormal, lightD3 )) * lightIntensity;
 	float nDotL4 = max(0, dot (realNormal, lightD4 )) * lightIntensity;
-	float spotlightDot4 = dot(lightD4, normalize(-spotLightDir_4));
-	nDotL4 *= spotlightDot4;
 	
+	float spotlightDot4 = dot(lightD4, normalize(-spotLightDir_4));
+	spotlightDot4 *= 2 * pow(spotlightDot4, 15);
+
 	/*
 	nDotL1 *= 1 / ( ld1.x * ld1.x + ld1.y * ld1.y + ld1.z * ld1.z );
 	nDotL2 *= 1 / ( ld2.x * ld2.x + ld2.y * ld2.y + ld2.z * ld2.z );
 	nDotL3 *= 1 / ( ld3.x * ld3.x + ld3.y * ld3.y + ld3.z * ld3.z );
 	nDotL4 *= 1 / ( ld4.x * ld4.x + ld4.y * ld4.y + ld4.z * ld4.z );
 	*/
-	outputColor *= (nDotL1 * diffuse_Color_L1 + nDotL2 * diffuse_Color_L2 + nDotL3 * diffuse_Color_L3 + nDotL4 * diffuse_Color_L4);
-	
-	//outputColor = position / 20;
 
+	outputColor *= (nDotL1 * diffuse_Color_L1 + nDotL2 * diffuse_Color_L2 + nDotL3 * diffuse_Color_L3 + spotlightDot4 * diffuse_Color_L4);
+	
 	// plus the specular illumination per light source
 	vec4 normalizedP = normalize(camDir - position);
 	float nDotP = dot(realNormal, normalizedP);
-	vec4 reflectedRay = (normalizedP - 2 * nDotP * realNormal); // ?
-	//if(nDotP <= 0)
-	//  {  reflectedRay = vec4(1, 0, 0, 0);  }
+	vec4 reflectedRay = (normalizedP - 2 * nDotP * realNormal);
 
 	float dotProduct1 = max(0, dot(reflectedRay, lightD1));
 	float specularIntensity1 = pow(dotProduct1, alpha);
@@ -102,7 +102,7 @@ void main()
 	float dotProduct4 = min(1, max(0, -dot(reflectedRay, lightD4)));
 	float specularIntensity4 = pow(dotProduct4, alpha);
 	vec4 specularColor4 = specularIntensity4 * speculr_Color_L4 * texture( pixels, uv ) * correctionFactor;
-	outputColor += specularColor4;
+	//outputColor += specularColor4;
 
 
 	// plus the ambient light color

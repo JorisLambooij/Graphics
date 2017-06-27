@@ -9,6 +9,7 @@ in vec3 vPosition;			// untransformed vertex position
 out vec4 normal;			// transformed vertex normal	
 out vec4 position;
 out vec2 uv;
+out mat4 transform_view;
 out mat4 transform_world;
 
 out vec4 tangent;
@@ -28,6 +29,7 @@ void main()
 	position = transform_2wrld * vec4(vPosition, 1.0);
 	uv = vUV;
 	transform_world = transform_2wrld;
+	transform_view = transform;
 
 	tangent = vec4(uv, vec2(0, 0));
 }
