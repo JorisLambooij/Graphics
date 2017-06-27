@@ -57,12 +57,12 @@ namespace Template_P3 {
 		    // on first run, prepare buffers
 		    Prepare( shader );
 
-		    // enable texture
-		    int texLoc = GL.GetUniformLocation( shader.programID, "pixels" );
-		    GL.Uniform1( texLoc, 0 );
-		    GL.ActiveTexture( TextureUnit.Texture0 );
-		    GL.BindTexture( TextureTarget.Texture2D, texture.id );
-            
+            // enable texture
+            int texLoc = GL.GetUniformLocation(shader.programID, "pixels");
+            GL.Uniform1(texLoc, 0);
+            GL.ActiveTexture(TextureUnit.Texture0);
+            GL.BindTexture(TextureTarget.Texture2D, texture.id);
+                        
             // enable shader
             GL.UseProgram( shader.programID );
 

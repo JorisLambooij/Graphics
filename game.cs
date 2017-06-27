@@ -19,8 +19,8 @@ namespace Template_P3 {
 	    float a = 0;							// teapot rotation angle
 	    Stopwatch timer;						// timer for measuring frame duration
 	    Shader shader;							// shader to use for rendering
-	    Shader postproc;						// shader to use for post processing
-	    Texture wood, tiles;							// texture to use for rendering
+	    Shader postproc;                        // shader to use for post processing
+        Texture wood, tiles, dwarfTexture, eyes_blue, marble;							// texture to use for rendering
 	    RenderTarget target;					// intermediate render target
 	    ScreenQuad quad;						// screen filling quad for post processing
 	    bool useRenderTarget = true;
@@ -45,7 +45,7 @@ namespace Template_P3 {
         public void Init()
 	    {
             lightbulb = new Mesh("../../assets/lightbulb.obj", 1);
-            
+
             // load a texture
             wood = new Texture("../../assets/wood.jpg");
             tiles = new Texture("../../assets/tiles.jpg");
@@ -63,6 +63,35 @@ namespace Template_P3 {
             mesh = new Mesh("../../assets/teapot.obj", 0.5f);
             mesh.meshTransform = Matrix4.CreateTranslation(new Vector3(6, 4f, 0)); ;
             meshNode = new SceneGraph(floorNode, mesh, wood);
+
+            //Load Dwarf
+            dwarfTexture = new Texture("../../assets/test.jpg");
+            Mesh dwarf = new Mesh("../../assets/dwarf.obj", 1000);
+            dwarf.meshTransform = Matrix4.CreateTranslation(new Vector3(0f, -50f, -40f));
+            SceneGraph dwarfNode = new SceneGraph(floorNode, dwarf, dwarfTexture);
+
+            //Load Eye
+            //eyes_blue = new Texture("../../assets/normal_brick.png");
+            eyes_blue = new Texture("../../assets/eyes_blue.jpg");
+            Mesh eyeball = new Mesh("../../assets/eyeball.obj", 1);
+            eyeball.meshTransform = Matrix4.CreateTranslation(new Vector3(0f, 4.25f, 7f));
+            SceneGraph eyeballNode = new SceneGraph(floorNode, eyeball, eyes_blue);
+
+            //Load Columns
+            marble = new Texture("../../assets/marble2.jpg");
+            Mesh column = new Mesh("../../assets/column.obj", 0.5f);
+            column.meshTransform = Matrix4.CreateTranslation(new Vector3(-13f, -4f, -13f));
+            SceneGraph columnNode = new SceneGraph(floorNode, column, marble);
+            Mesh column2 = new Mesh("../../assets/column.obj", 0.5f);
+            column2.meshTransform = Matrix4.CreateTranslation(new Vector3(13f, -4f, -13f));
+            SceneGraph columnNode2 = new SceneGraph(floorNode, column2, marble);
+            Mesh column3 = new Mesh("../../assets/column.obj", 0.5f);
+            column3.meshTransform = Matrix4.CreateTranslation(new Vector3(13f, -4f, 13f));
+            SceneGraph columnNode3 = new SceneGraph(floorNode, column3, marble);
+            Mesh column4 = new Mesh("../../assets/column.obj", 0.5f);
+            column4.meshTransform = Matrix4.CreateTranslation(new Vector3(-13f, -4f, 13f));
+            SceneGraph columnNode4 = new SceneGraph(floorNode, column4, marble);
+
 
             camTransform = Matrix4.Identity;
 
