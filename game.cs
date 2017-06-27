@@ -52,7 +52,7 @@ namespace Template_P3 {
 
 
             Mesh floor = new Mesh("../../assets/floor.obj", 4f);
-            floor.meshTransform = Matrix4.CreateTranslation(new Vector3(0, 0f, 0)); ;
+            floor.meshTransform = Matrix4.CreateTranslation(new Vector3(0, 0f, 0));
             floorNode = new SceneGraph(null, floor, tiles);
 
             // load teapots
@@ -61,22 +61,22 @@ namespace Template_P3 {
             SceneGraph meshNode = new SceneGraph(floorNode, mesh, wood);
 
             mesh = new Mesh("../../assets/teapot.obj", 0.5f);
-            mesh.meshTransform = Matrix4.CreateTranslation(new Vector3(6, 4f, 0)); ;
-            meshNode = new SceneGraph(floorNode, mesh, wood);
-
+            mesh.meshTransform = Matrix4.CreateTranslation(new Vector3(6, 4f, 0));
+            SceneGraph meshNode2 = new SceneGraph(meshNode, mesh, wood);
+            
             //Load Dwarf
             dwarfTexture = new Texture("../../assets/test.jpg");
             Mesh dwarf = new Mesh("../../assets/dwarf.obj", 1000);
             dwarf.meshTransform = Matrix4.CreateTranslation(new Vector3(0f, -50f, -40f));
             SceneGraph dwarfNode = new SceneGraph(floorNode, dwarf, dwarfTexture);
-
+            /*
             //Load Eye
             //eyes_blue = new Texture("../../assets/normal_brick.png");
             eyes_blue = new Texture("../../assets/eyes_blue.jpg");
             Mesh eyeball = new Mesh("../../assets/eyeball.obj", 1);
             eyeball.meshTransform = Matrix4.CreateTranslation(new Vector3(0f, 4.25f, 7f));
             SceneGraph eyeballNode = new SceneGraph(floorNode, eyeball, eyes_blue);
-
+            */
             //Load Columns
             marble = new Texture("../../assets/marble2.jpg");
             Mesh column = new Mesh("../../assets/column.obj", 0.5f);
@@ -91,7 +91,7 @@ namespace Template_P3 {
             Mesh column4 = new Mesh("../../assets/column.obj", 0.5f);
             column4.meshTransform = Matrix4.CreateTranslation(new Vector3(-13f, -4f, 13f));
             SceneGraph columnNode4 = new SceneGraph(floorNode, column4, marble);
-
+            /*
             //Load Dragon
             dragonTexture = new Texture("../../assets/test.jpg");
             Mesh dragon = new Mesh("../../assets/dragon.obj", 1);
@@ -103,7 +103,7 @@ namespace Template_P3 {
             //Mesh diamond = new Mesh("../../assets/diamond.obj", 0.005f);
             //diamond.meshTransform = Matrix4.CreateTranslation(new Vector3(0f, -1f, 0f));
             //SceneGraph diamondNode = new SceneGraph(floorNode, diamond, diamondTexture);
-
+            */
 
             camTransform = Matrix4.Identity;
 
@@ -191,25 +191,27 @@ namespace Template_P3 {
 
         // tick for OpenGL rendering code
         public void RenderGL()
-	    {
-		    // measure frame duration
-		    float frameDuration = timer.ElapsedMilliseconds;
-		    timer.Reset();
-		    timer.Start();
+        {
+            // measure frame duration
+            float frameDuration = timer.ElapsedMilliseconds;
+            timer.Reset();
+            timer.Start();
 
             // prepare matrix for vertex shader
-            Matrix4 transform = Matrix4.CreateFromAxisAngle( new Vector3( 0, 1, 0 ), 0 );
+            Matrix4 transform = Matrix4.CreateFromAxisAngle(new Vector3(0, 1, 0), 0);
             Matrix4 worldTransform = transform * Matrix4.CreateTranslation(camTransform.ExtractTranslation());
             transform *= Matrix4.CreateTranslation(0, -4, -20) * Matrix4.CreateTranslation(camTransform.ExtractTranslation());
             transform *= Matrix4.CreateFromQuaternion(camTransform.ExtractRotation());
             transform *= Matrix4.CreatePerspectiveFieldOfView(1.2f, 1.3f, .1f, 1000);
+
+
+            // update rotation
+            a += 0.001f * frameDuration;
+            if (a > 2 * PI) a -= 2 * PI;
+
+            lightData[01] = new Vector4((float)(10 * Math.Sin(0)), 10, (float)(-10 * Math.Cos(0)), 1);
+            floorNode.treeNodeChildren[0].treeNodeChildren[0].treeNodeMesh.meshTransform = Matrix4.CreateFromAxisAngle(new Vector3(0, 1, 0), a) * Matrix4.CreateTranslation(new Vector3(6, 4f, 0));
             
-
-		    // update rotation
-		    a += 0.001f * frameDuration; 
-		    if (a > 2 * PI) a -= 2 * PI;
-
-            lightData[01] = new Vector4((float)(10 * Math.Sin(a)), 10, (float)(-10 * Math.Cos(a)), 1);
 
             Vector4 camDir = new Vector4(-camTransform.ExtractTranslation(), 0);
 

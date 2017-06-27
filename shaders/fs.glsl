@@ -36,6 +36,9 @@ uniform vec4 diffuse_Color_L4;
 uniform vec4 speculr_Color_L4;
 uniform vec4 spotLightDir_4;
 
+uniform float brightness;
+
+
 int alpha = 40;
 
 // shader output
@@ -49,8 +52,6 @@ void main()
 
 	// diffuse color of the mesh (texture)
     outputColor = texture( pixels, uv );// + 0.5f * vec4( normal.xyz, 1 );
-
-	//vec4 rlightPos4 = transform_world * lightPos4;
 
 	vec4 realNormal = normalize(normal);
 	// times the diffuse illumination (and the diffuse light color)
@@ -69,6 +70,7 @@ void main()
 	
 	float spotlightDot4 = dot(lightD4, normalize(-spotLightDir_4));
 	spotlightDot4 *= 2 * pow(spotlightDot4, 15);
+	spotlightDot4 = max(0, spotlightDot4);
 
 	/*
 	nDotL1 *= 1 / ( ld1.x * ld1.x + ld1.y * ld1.y + ld1.z * ld1.z );
@@ -77,7 +79,7 @@ void main()
 	nDotL4 *= 1 / ( ld4.x * ld4.x + ld4.y * ld4.y + ld4.z * ld4.z );
 	*/
 
-	outputColor *= (nDotL1 * diffuse_Color_L1 + nDotL2 * diffuse_Color_L2 + nDotL3 * diffuse_Color_L3 + spotlightDot4 * diffuse_Color_L4);
+	outputColor *= (nDotL1 * diffuse_Color_L1 + nDotL2 * diffuse_Color_L2 + nDotL3 * diffuse_Color_L3 + spotlightDot4 * diffuse_Color_L4) * brightness;
 	
 	// plus the specular illumination per light source
 	vec4 normalizedP = normalize(camDir - position);
@@ -104,12 +106,12 @@ void main()
 	vec4 specularColor4 = specularIntensity4 * speculr_Color_L4 * texture( pixels, uv ) * correctionFactor;
 	//outputColor += specularColor4;
 
-
+	
 	// plus the ambient light color
 	outputColor += ambient_Color * texture( pixels, uv );
 	
 	
-	//outputColor.x = specularIntensity1;
+	//outputColor.x = nDotL1;
 	//outputColor = reflectedRay;
 	//outputColor.z = nDotP;
 }

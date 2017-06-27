@@ -20,6 +20,8 @@ namespace Template_P3 {
         public Matrix4 meshTransform;
         public Matrix4 meshScale;
 
+        public float brightness = 1;
+
 	    // constructor
 	    public Mesh( string fileName, float scale )
 	    {
@@ -68,19 +70,19 @@ namespace Template_P3 {
 
             Vector4 ambient_Color_1 = lightData[00];
 
-            Vector4 lightPosition_1 = Vector4.Transform(lightData[01], meshScale * meshTransform * worldTransform);
+            Vector4 lightPosition_1 = Vector4.Transform(lightData[01], meshScale  * worldTransform);
             Vector4 diffuse_Color_1 = lightData[02];
             Vector4 speculr_Color_1 = lightData[03];
 
-            Vector4 lightPosition_2 = Vector4.Transform(lightData[04], meshScale * meshTransform * worldTransform);
+            Vector4 lightPosition_2 = Vector4.Transform(lightData[04], meshScale * worldTransform);
             Vector4 diffuse_Color_2 = lightData[05];
             Vector4 speculr_Color_2 = lightData[06];
 
-            Vector4 lightPosition_3 = Vector4.Transform(lightData[07], meshScale * meshTransform * worldTransform);
+            Vector4 lightPosition_3 = Vector4.Transform(lightData[07], meshScale * worldTransform);
             Vector4 diffuse_Color_3 = lightData[08];
             Vector4 speculr_Color_3 = lightData[09];
 
-            Vector4 lightPosition_4 = Vector4.Transform(lightData[10], meshScale * meshTransform * worldTransform);
+            Vector4 lightPosition_4 = Vector4.Transform(lightData[10], meshScale * worldTransform);
             Vector4 diffuse_Color_4 = lightData[11];
             Vector4 speculr_Color_4 = lightData[12];
             Vector4 spotlightDir_4 = lightData[13];
@@ -119,6 +121,8 @@ namespace Template_P3 {
             specular = GL.GetUniformLocation(shader.programID, "speculr_Color_L4");
             GL.Uniform4(specular, speculr_Color_4);
 
+            int bright = GL.GetUniformLocation(shader.programID, "brightness");
+            GL.Uniform1(bright, brightness);
 
             // pass view transform to vertex shader
             Matrix4 m = meshScale * meshTransform * transform;
